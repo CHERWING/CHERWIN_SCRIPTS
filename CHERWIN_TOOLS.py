@@ -6,7 +6,7 @@ import sys
 import requests
 from http import HTTPStatus
 
-NOW_TOOLS_VERSION = '2024.04.06'
+NOW_TOOLS_VERSION = '2024.04.08'
 if os.path.isfile('DEV_ENV.py'):
     import DEV_ENV
 # 尝试导入包
@@ -135,13 +135,13 @@ def CHECK_UPDATE(local_version, server_version_url, server_script_url, script_fi
 
     except requests.exceptions.RequestException as e:
         print(f'发生网络错误：{e}')
-
+        
     except Exception as e:
         print(f'发生未知错误：{e}')
 
     return False  # 返回 False 表示没有进行更新操作
 
-def CHECK_UPDATE_NEW(local_version, server_version, server_script_url, script_filename,server_version_url=None):
+def CHECK_UPDATE_NEW(local_version, server_version, server_script_url, script_filename,server_version_url=None,APP_NAME=None):
     """
     检查版本并更新
 
@@ -187,7 +187,10 @@ def CHECK_UPDATE_NEW(local_version, server_version, server_script_url, script_fi
 
     except requests.exceptions.RequestException as e:
         print(f'发生网络错误：{e}')
-
+        server_base_url = f"https://py.cherwin.cn/{APP_NAME}/"
+        server_script_url = f"{server_base_url}{script_filename}"
+        CHECK_UPDATE_NEW(local_version, server_version, server_script_url, script_filename, APP_NAME=APP_NAME)
+        
     except Exception as e:
         print(f'发生未知错误：{e}')
 
@@ -468,13 +471,12 @@ def CHECK():
 
 def main(APP_NAME,local_script_name,ENV_NAME,local_version):
     global APP_INFO,TIPS,TIPS_HTML
-    server_base_url = f"https://py.cherwin.cn/{APP_NAME}/"
-    server_script_url = f"{server_base_url}{local_script_name}"
+    git_url = f'https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/{local_script_name}'
     if CHECK():
         APP_INFO = CHERWIN_SCRIPT_CONFIG.get("APP_CONFIG", {}).get(ENV_NAME, {})
         # print(APP_INFO)
         server_version = APP_INFO.get('NEW_VERSION', '')
-        if CHECK_UPDATE_NEW(local_version, server_version, server_script_url, local_script_name):
+        if CHECK_UPDATE_NEW(local_version, server_version, git_url, local_script_name,APP_NAME=APP_NAME):
             print('更新成功，请重新运行脚本！')
 
         if not APP_INFO.get('ENABLE', False):
