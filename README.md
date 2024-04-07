@@ -1,0 +1,162 @@
+# ✨CHERWIN_SCRIPTS脚本使用指南 
+<img align="right" width="150" src="https://github.com/CHERWING/CHERWIN_SCRIPTS/assets/160421895/691b9f30-7d5c-4b55-8af0-0e8f14b6a424">
+
+## ✨青龙变量设置
+  - ck变量名称均为脚本名称，如永辉生活变量：export YHSH="xxxx"
+  - SCRIPT_UPDATE变量设置是否自动更新默认开启，关闭请设置export SCRIPT_UPDATE="False"
+
+## ✨ wxpusher一对一推送功能
+- 先到https://wxpusher.zjiecode.com/ 注册-新建应用-获取appToken及关注二维码或链接
+- 需要定义变量export WXPUSHER=wxpusher的app_token，不设置则不启用wxpusher一对一推送
+- 扫描上方二维码并加入推送群组，然后在提交的变量最后添加@wxpusher的UID。
+
+## 🔥 永辉生活 YHSH.py
+- ✔ 支持一对一推送。
+- 🎉 功能：积分签到，种树，种树任务，成长值任务，试用申请，果园互助，组队互助，助力券。
+- 💬 邀请口令：🔐6hDhYvlqIp1😀恭喜你，获得永辉生活免费会员资格。
+- 💬 小程序邀请码
+  
+  <img width="150" src="https://github.com/CHERWING/CHERWIN_SCRIPTS/assets/160421895/6634271f-228a-462b-bd7b-4016cd2d641f">
+  
+- 💬 APP邀请码
+  
+  <img  width="150" src="https://github.com/CHERWING/CHERWIN_SCRIPTS/assets/160421895/be65968f-9be2-4fe6-b9c5-7b85c23d5743">
+  
+
+- ⚙️ 抓包步骤：
+    1. 打开永辉生活APP或小程序并点击“我的”，打开抓包工具。
+    2. 点击“积分签到”，找到以下url。
+    3. 链接示例： `https://api.yonghuivip.com/web/coupon/credit/coupon/getcreditcouponpageinfo/v2?xxxxx`
+    4. 多账号使用 `#` 进行分割。
+  
+## 🔥 朴朴超市 PPCS.py
+- ✔ 支持一对一推送。
+- 🎉 功能：
+    积分签到
+    组队互助
+- 💬 邀请码：
+  
+  <img width="150" src="https://github.com/CHERWING/CHERWIN_SCRIPTS/assets/160421895/a2cfaf8d-c2c2-4d7f-a06c-1794c0f05351">
+  
+- ⚙️ 抓包步骤：
+    1. 打开朴朴超市APP，已登录直接清理应用数据。
+    2. 打开抓包。
+    3. 抓包链接示例： `https://mcs-mimp-web.sf-express.com/mcs-mimp/share/weChat/shareGiftReceiveRedirect`
+    4. 登陆。
+    5. 找https://cauth.pupuapi.com/clientauth/user/verify_login
+    6. 复制返回body中的refresh_token
+    7. 多账号#或&分割
+
+## 🔥 顺丰速运 SFSY.py
+- ✔ 支持一对一推送。
+- 🎉 功能：积分签到,签到任务
+- ⚙️ 抓包步骤：
+    1. 打开顺丰速运APP或小程序并点击“我的”，打开抓包工具。
+    2. 点击“积分”，找到带以下url复制。
+    3. 链接示例： `https://mcs-mimp-web.sf-express.com/mcs-mimp/share/weChat/shareGiftReceiveRedirect`
+    4. 多账号使用 `#` 进行分割。
+
+## 🔥 德邦快递 DBKD.py
+- ✔ 支持一对一推送。
+- 🎉 功能：积分签到
+- ✨ 抓包步骤：
+      1. 打开德邦快递小程序
+      2. 授权登陆
+      3. 打开抓包工具
+      4. 找到https://www.deppon.com/ndcc-gwapi/userService/eco/user/login请求中body里面的[code]
+      5. 复制里面的[code]参数值
+    3. 链接示例： `https://mcs-mimp-web.sf-express.com/mcs-mimp/share/weChat/shareGiftReceiveRedirect`
+    4. 登陆。
+    5. 找https://cauth.pupuapi.com/clientauth/user/verify_login
+    6. 复制返回body中的refresh_token
+    7. 多账号#或&分割
+
+## 🔥 统一茄皇 TYQH.py
+- ✔ 支持一对一推送。
+- 🎉 功能：日常任务，互助任务
+- ✨ 抓包步骤：
+      1. 打开统一快乐星球小程序-活动
+      2. 开始抓包-茄皇的家第三期
+      3. 抓取.../public/api/login获取thirdId@wid
+      4. 多账号#或&分割 
+
+## 🔥 海底捞小程序 HDL.py
+- ✔ 支持一对一推送。
+- 🎉 功能：签到
+- ✨ 抓包步骤：
+      1. 开始抓包
+      2. 打开海底捞小程序
+      3. 抓取https://superapp-public.kiwa-tech.com/api/gateway/login/center/login/wechatLogin获取openId@uid
+      4. 多账号#或&分割
+
+## 🔥 奈雪点单小程序 NXDD.py
+- ✔ 支持一对一推送。
+- 🎉 功能：签到
+- ✨ 抓包步骤：
+      1. 开始抓包
+      2. 打开奈雪点单
+      3. 抓取任意url获取Authorization
+      4. 多账号#或&分割
+
+## 🔥 霸王茶姬小程序 BWCJ.py
+- ✔ 支持一对一推送。
+- 🎉 功能：签到
+- ✨ 抓包步骤：
+      1. 开始抓包
+      2. 打开霸王茶姬小程序
+      3. 抓取任意url获取qm-user-token
+      4. 多账号#或&分割
+    
+## 🔥 韵达快递小程序 YDKD.py
+- ✔ 支持一对一推送。
+- 🎉 功能：签到
+- ✨ 抓包步骤：
+      1. 开始抓包
+      2. 打开韵达快递小程序
+      3. 抓取任意url获取Authorization
+      4. 多账号#或&分割
+
+## 🔥 中通快递小程序 ZTKD.py
+- ✔ 支持一对一推送。
+- 🎉 功能：签到
+- ✨ 抓包步骤：
+      1. 开始抓包
+      2. 打开韵达快递小程序
+      3. 抓取任意url获取x-token或者token
+      4. 多账号#或&分割
+
+## 🔥 极兔速递小程序 JTSD.py
+- ✔ 支持一对一推送。
+- 🎉 功能：签到
+- ✨ 抓包步骤：
+      1. 开始抓包
+      2. 打开韵达快递小程序
+      3. 抓取任意url获取authtoken
+      4. 多账号#或&分割
+
+## 🔥 口味王会员中心小程序 KWW.py
+- ✔ 支持一对一推送。
+- 🎉 功能：签到
+- ✨ 抓包步骤：
+      1. 开始抓包
+      2. 打开韵达快递小程序
+      3. 抓取.../member/api/info/获取memberId@unionid@openid
+      4. 多账号#或&分割
+  
+## 🔥 卡夫亨氏新厨艺公众号 KFHS.py
+- ✔ 支持一对一推送。
+- 🎉 功能：签到
+- ✨ 注册链接（复制微信打开）：https://fscrm.kraftheinz.net.cn/?from=N8d3E4AyKCBiu7DuBRNPlw==#/
+  
+<img  width="150" src="https://github.com/CHERWING/CHERWIN_SCRIPTS/assets/160421895/3f93bbe1-6ebb-462a-b61e-d54b0bbcecfc">
+
+- ✨ 抓包步骤：
+      1. 开始抓包
+      2. 打开韵达快递小程序
+      3. 抓取任意url获取token
+      4. 多账号#或&分割
+  
+## 🔥 天翼云盘 TYYP.py
+- ✔ 支持一对一推送。
+- 🎉 功能：签到
+- ✨ 变量：手机号@密码
