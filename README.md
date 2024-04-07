@@ -1,6 +1,23 @@
 # ✨CHERWIN_SCRIPTS脚本使用指南 
 <img align="right" width="150" src="https://github.com/CHERWING/CHERWIN_SCRIPTS/assets/160421895/691b9f30-7d5c-4b55-8af0-0e8f14b6a424">
 
+## 青龙订阅任务
+```
+名称：CHERWIN_SCRIPT
+类型：公开仓库
+链接：[https://github.com/linbailo/zyqinglong](https://github.com/CHERWING/CHERWIN_SCRIPTS).git
+定时类型：crontab
+定时规则：(拉库一次就行，后续自动更新)
+文件后缀：py
+```
+```
+有其他薅羊毛应用或者有新活动可以Issues提交
+格式：
+  应用名称：xxxx
+  任务奖励：xxxx
+  （有时间一定写）
+```
+
 ## ✨青龙变量设置
   - ck变量名称均为脚本名称，如永辉生活变量：export YHSH="xxxx"
   - SCRIPT_UPDATE变量设置是否自动更新默认开启，关闭请设置export SCRIPT_UPDATE="False"
@@ -160,3 +177,6 @@
 - ✔ 支持一对一推送。
 - 🎉 功能：签到
 - ✨ 变量：手机号@密码
+
+# 注意事项&免责申明
+ 本仓库发布的脚本及其中涉及的任何解密分析脚本，仅用于测试和学习研究，禁止用于商业用途，不能保证其合法性，准确性，完整性和有效性，请根据情况自行判断。本项目内所有资源文件，禁止任何公众号、自媒体进行任何形式的转载、发布。您必须在下载后的 24 小时内从计算机或手机中完全删除以上内容。
