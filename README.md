@@ -1,4 +1,4 @@
-# ✨CHERWIN_SCRIPTS脚本使用指南 
+# <h1 align="center">✨CHERWIN脚本使用指南 ✨</h1>
 <img align="right" width="150" src="https://github.com/CHERWING/CHERWIN_SCRIPTS/assets/160421895/691b9f30-7d5c-4b55-8af0-0e8f14b6a424">
 
 ## 自助挂机：[https://gj.cherwin.cn](https://gj.cherwin.cn)
