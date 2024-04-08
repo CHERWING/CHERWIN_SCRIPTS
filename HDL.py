@@ -1,11 +1,10 @@
 # !/usr/bin/python3
 # -- coding: utf-8 --
 # -------------------------------
-# ✨ 推荐cron：0 6 * * *
 # ✨✨✨ @Author CHERWIN✨✨✨
 # -------------------------------
-# cron "0 6 * * *" script-path=xxx.py,tag=匹配cron用
-# const $ = new Env('中通快递小程序签到')
+# cron "1 8 * * *" script-path=xxx.py,tag=匹配cron用
+# const $ = new Env('海底捞小程序签到')
 
 import os
 from os import path
@@ -300,11 +299,11 @@ if __name__ == '__main__':
 export {ENV_NAME}='{CK_NAME}参数值'多账号#或&分割
 export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
 ✨ ✨ 注意：抓完CK没事儿别打开小程序，重新打开小程序请重新抓包
-✨ 推荐cron：0 6 * * *
+✨ 推荐cron：01 8 * * *
 ✨✨✨ @Author CHERWIN✨✨✨
 ''')
     local_script_name = os.path.basename(__file__)
-    local_version = '2024.04.06'
+    local_version = '2024.04.07'
     if os.path.isfile('CHERWIN_TOOLS.py'):
         import_Tools()
     else:
