@@ -966,35 +966,17 @@ class RUN:
         Log(f"\n---------开始执行第{self.index}个账号>>>>>")
         if not self.getCredit():
             return False
-        time.sleep(wait_time)  # 等待
         self.sign()
-        time.sleep(wait_time)  # 等待
-        # self.teamDetail()
+        self.teamDetail()
         self.get_taskList()
-        time.sleep(wait_time)  # 等待
         self.creatTeam()
-        time.sleep(wait_time)  # 等待
-        # Log(f'\n>>>>>>开始果园任务')
-        # if self.farmInfo():
-        #     self.plantFruit_sign()
-        #     self.plantFruit_getTaskList()
-        #     self.get_inviteTicket()
-        #     self.receive_inviteWater()
-        #     if not self.fruit_is_ripe:self.watering()
-        # else:
-        #     Log('当前定位门店没有果园活动，请更换定位门店')
         self.get_GrowthValue()
-        time.sleep(wait_time)  # 等待
         self.get_GrowthtaskList()
-        time.sleep(wait_time)  # 等待
         Log(f'\n>>>>>>开始试用任务')
         self.get_WinTryList()
-        time.sleep(wait_time)  # 等待
         self.tryList()
-        time.sleep(wait_time)  # 等待
         Log('\n>>>>>>开始助力券任务')
         self.listBoostCouponByPage()
-        time.sleep(wait_time)  # 等待
         if self.index == 1:
             self.Boostcoupon()
         else:
@@ -1091,7 +1073,7 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
 ✨✨✨ @Author CHERWIN✨✨✨
         ''')
     local_script_name = os.path.basename(__file__)
-    local_version = '2024.04.06'
+    local_version = '2024.04.07'
     if os.path.isfile('CHERWIN_TOOLS.py'):
         import_Tools()
     else:

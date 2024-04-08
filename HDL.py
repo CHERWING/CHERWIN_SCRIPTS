@@ -303,7 +303,7 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
 ✨✨✨ @Author CHERWIN✨✨✨
 ''')
     local_script_name = os.path.basename(__file__)
-    local_version = '2024.04.07'
+    local_version = '2024.04.08'
     if os.path.isfile('CHERWIN_TOOLS.py'):
         import_Tools()
     else:
