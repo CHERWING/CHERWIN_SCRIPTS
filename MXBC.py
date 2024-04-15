@@ -118,7 +118,7 @@ class RUN:
         Log(f'开始登陆----->>>')
         params = {
             'third': 'wxmini',
-            'unionid': 'o0GLKv7aPboGafM_zMVcuuWzu8MY',
+            'unionid': self.unionid,
             't': int(time.time() * 1000),  # 获取当前13位时间戳
             'appId': 'd82be6bbc1da11eb9dd000163e122ecb'
         }
