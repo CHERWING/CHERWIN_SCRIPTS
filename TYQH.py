@@ -84,7 +84,9 @@ class RUN:
         self.can_help_task = True
         self.can_help_risk = True
         self.can_help_unlock = True
-
+        self.role_id =''
+        self.role_progress=''
+        self.role_max=''
         self.all_land_unlock = True
         self.all_role_unlock = True
         self.help_task_config = {}
@@ -1206,7 +1208,7 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
 ✨✨✨ @Author CHERWIN✨✨✨
                 ''')
     local_script_name = os.path.basename(__file__)
-    local_version = '2024.04.06'
+    local_version = '2024.04.16'
     if os.path.isfile('CHERWIN_TOOLS.py'):
         import_Tools()
     else:
