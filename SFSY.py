@@ -189,7 +189,7 @@ class RUN:
                     # print("taskId:", taskId)
                     # print("taskCode:", taskCode)
                     # print("----------------------")
-                    # self.doTask()
+                    self.doTask()
                     time.sleep(3)
                 self.receiveTask()
 
@@ -1094,7 +1094,7 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
     ''')
 
     local_script_name = os.path.basename(__file__)
-    local_version = '2024.04.06'
+    local_version = '2024.04.16'
     if os.path.isfile('CHERWIN_TOOLS.py'):
         import_Tools()
     else:
