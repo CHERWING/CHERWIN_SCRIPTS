@@ -96,6 +96,7 @@ class RUN:
         self.gamecode_li = []
         self.canJoinTeam = True
         self.canhelp_coup = True
+        self.teamCode = ''
 
 
     # 将参数转换为字典
