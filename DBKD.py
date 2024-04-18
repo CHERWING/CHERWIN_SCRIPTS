@@ -3,8 +3,8 @@
 # -------------------------------
 # ✨✨✨ @Author CHERWIN✨✨✨
 # -------------------------------
-# cron "0 6 * * *" script-path=xxx.py,tag=匹配cron用
-# const $ = new Env('中通快递小程序签到')
+# cron "0 7 * * *" script-path=xxx.py,tag=匹配cron用
+# const $ = new Env('德邦快递小程序签到')
 
 import os
 import requests
@@ -398,7 +398,7 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
 ✨✨✨ @Author CHERWIN✨✨✨
 ''')
     local_script_name = os.path.basename(__file__)
-    local_version = '2024.04.06'
+    local_version = '2024.04.18'
     if os.path.isfile('CHERWIN_TOOLS.py'):
         import_Tools()
     else:
