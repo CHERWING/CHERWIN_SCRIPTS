@@ -4,7 +4,6 @@
 # @Author : cherwin
 # -------------------------------
 # cron "*/10 9:59 1-31 2-6 * *" script-path=xxx.py,tag=匹配cron用
-# 2-6月每月1日9点55到10点1分，每10秒执行一次
 # const $ = new Env('统一茄皇监控')
 import hashlib
 import json
@@ -402,7 +401,7 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
         #     thread = threading.Thread(target=execute_task, args=(infos, index))
         #     threads.append(thread)
         #     thread.start()
-        # 
+        #
         # for thread in threads:
         #     thread.join()
     while True:
