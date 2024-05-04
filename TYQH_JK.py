@@ -381,7 +381,7 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
     token = ''
     ENV = os.environ.get('TYQH','')
     TYQH_DHID = os.environ.get('TYQH_DHID',None)
-    if TYQH_DHID == 0:
+    if TYQH_DHID == '0':
         Log(f'\n当前已设置TYQH_DHID变量，将自动遍历兑换商品')
     elif TYQH_DHID:
         Log(f'\n当前已设置TYQH_DHID变量，将自动兑换id【{TYQH_DHID}】商品')
