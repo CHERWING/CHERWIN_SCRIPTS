@@ -3,7 +3,7 @@
 # -------------------------------
 # @Author : cherwin
 # -------------------------------
-# cron "*/10 9:59 1-31 2-6 * *" script-path=xxx.py,tag=匹配cron用
+# cron "59 9 * 2-6 * *" script-path=xxx.py,tag=匹配cron用
 # const $ = new Env('统一茄皇监控')
 import hashlib
 import json
