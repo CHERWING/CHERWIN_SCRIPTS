@@ -3,7 +3,7 @@
 # -------------------------------
 # @Author : cherwin
 # -------------------------------
-# cron "23 7-23/2 * * *	" script-path=xxx.py,tag=匹配cron用
+# cron "25 10-22/2 * * *" script-path=xxx.py,tag=匹配cron用
 # const $ = new Env('统一快乐星球小程序-茄皇的家')
 import hashlib
 import json
@@ -182,11 +182,11 @@ class RUN:
                     auth = response_data['data']['token'] or ''
                     if auth:
                         login_successful = True
-                        Log(f'账号【{self.user_index}】登录成功')
+                        print(f'账号【{self.user_index}】登录成功')
                         Authorization = {'Authorization': auth}
                         self.headers.update(Authorization)
                     else:
-                        Log(f'账号【{self.user_index}】登录获取auth失败')
+                        print(f'账号【{self.user_index}】登录获取auth失败')
                 else:
                     print(f"登录获取auth失败[{response_data['code']}]: {response_data['message']}")
             elif response.status_code == 403:
@@ -687,8 +687,9 @@ class RUN:
                 if slideImgInfo and validateCount:
                     print('本次冒险需要验证码')
                     self.can_go_risk = False
-                    # if self.get_CapCode(slideImgInfo):
-                    #     self.checkUserCapCode()
+                    if self.get_CapCode(slideImgInfo):
+                        if self.checkUserCapCode():
+                            self.take_risk_go()
                 else:
                     print(f"验证次数上限")
                     self.can_go_risk = False
@@ -891,23 +892,37 @@ class RUN:
                 print(f'查询好友列表失败[{str(code)}]:{message}')
         except Exception as e:
             print(e)
-    def get_CapCode(self,slideImgInfo):
+
+    def get_CapCode(self, slideImgInfo):
+        slidingImage = slideImgInfo.get('slidingImage', None)
+        backImage = slideImgInfo.get('backImage', None)
+        dddddocr_api = os.environ.get('OCR_API',False)
+        if not dddddocr_api:
+            print('未定义变量【OCR_API】\n取消验证码识别\n搭建方式：https://github.com/CHERWING/CHERWIN_OCR')
+            return False
+        if slidingImage and backImage:
+            data = {
+                "slidingImage": slidingImage,
+                "backImage": backImage
+            }
+            response = requests.post(f"{dddddocr_api}/capcode", data=json.dumps(data),headers={'Content-Type': 'application/json'})
+            print(response.json())
+            self.capcode = response.json().get('result','')
+            if self.capcode:
+                return True
+            else:
+                return False
+
+    def get_CapCode_local(self, slideImgInfo):
         slidingImage = slideImgInfo.get('slidingImage', None)
         backImage = slideImgInfo.get('backImage', None)
         if slidingImage and backImage:
-            slidingImage_path = 'slidingImage.png'
-            backImage_path = 'backImage.png'
-            self.capcode = CHERWIN_TOOLS.OCR_API(slidingImage,backImage)
-            return True
-            # slidingImage_res = CHERWIN_TOOLS.BASE64_TO_IMG(slidingImage, slidingImage_path)
-            # backImage_res = CHERWIN_TOOLS.BASE64_TO_IMG(backImage, backImage_path)
-            # if slidingImage_res and backImage_res:
-            #     self.capcode = CHERWIN_TOOLS.CAPCODE(slidingImage_path, backImage_path)
-            #     return True
-            # else:
-            #     return False
-        else:
-            return False
+            self.capcode =CHERWIN_TOOLS.CAPCODE(slidingImage,backImage)
+            if self.capcode:
+                return True
+            else:
+                return False
+
     def friend_stealGold(self, user_data):
         print(f'偷取好友--->>>')
         # try:
@@ -928,8 +943,9 @@ class RUN:
             if slideImgInfo and validateCount:
                 print(f"偷取好友[{user_data['nickName']}]，需要滑块验证")
                 self.can_stealGold = False
-                # if self.get_CapCode(slideImgInfo):
-                #     self.checkUserCapCode()
+                if self.get_CapCode(slideImgInfo):
+                    if self.checkUserCapCode():
+                        self.friend_stealGold(user_data)
             else:
                 print(f"偷取好友[{user_data['nickName']}]验证码上限")
                 self.can_stealGold = False
@@ -955,28 +971,13 @@ class RUN:
         if code == 0:
             data = data.get('data', 0)
             print(f"验证码正确，获取到[{data}]")
+            return True
         else:
             message = data.get('message', '')
-            print(f"验证码错误，偷取失败[{message}]")
+            print(f"验证码错误[{message}]")
+            return False
         # except Exception as e:
         #     print(e)
-    def exchange_reward(self, reward_id):
-        print(f'兑换--->>>')
-        try:
-            params = {'id': reward_id}
-            sign_header = self.gen_sign(params)
-            url = f'{self.base_url}/exchange/reward'
-            response = self.s.get(url, headers=sign_header, params=params)
-            data = response.json()
-            code = data.get('code', -1)
-            if code == 0:
-                data = data.get('data', {}).get('name') or ''
-                print(f"兑换[{data}]成功")
-            else:
-                message = data.get('message', '')
-                print(f'兑换[id={reward_id}]: {message}')
-        except Exception as e:
-            print(e)
 
     def risk_task(self):
         self.take_risk_get()
@@ -1029,7 +1030,6 @@ class RUN:
         wait_time = random.randint(1000, 3000) / 1000.0  # 转换为秒
         if not self.Login_res:
             return False
-
         self.userInfo_autoSun()
 
         self.userInfo_get()
@@ -1068,7 +1068,7 @@ class RUN:
         # print(new_data)
         USER_INFO.update(new_data)
         CHERWIN_TOOLS.SAVE_INVITE_CODE(f"INVITE_CODE/{ENV_NAME}_INVITE_CODE.json", new_data)
-        # self.steal_task()
+        self.steal_task()
         self.sendMsg()
         return True
 
@@ -1202,13 +1202,17 @@ if __name__ == '__main__':
       抓{CK_URL}取{CK_NAME}
 ✨ 设置青龙变量：
 export {ENV_NAME}= '{CK_NAME}'多账号#分割或&
+export OCR_API= 'http://localhost:3721' 
+✨ 由于青龙python版本问题无法直接使用dddocr需要自行搭建API，搭建方式：https://github.com/CHERWING/CHERWIN_OCR
+✨ 如果你的环境可以安装dddocr库则可以替换代码内的【self.get_CapCode】为【self.get_CapCode_local】
 export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
-✨ 推荐定时：25 7-23/2 * * *
+✨ 推荐定时：25 10-22/2 * * *
 ✨ 第一个账号助力作者，其余互助
 ✨✨✨ @Author CHERWIN✨✨✨
                 ''')
+
     local_script_name = os.path.basename(__file__)
-    local_version = '2024.04.16'
+    local_version = '2024.05.04'
     if os.path.isfile('CHERWIN_TOOLS.py'):
         import_Tools()
     else:
