@@ -23,6 +23,8 @@
 ## ✨青龙变量设置
   - ck变量名称均为脚本名称，如永辉生活变量：export YHSH="xxxx"
   - SCRIPT_UPDATE变量设置是否自动更新默认开启，关闭请设置export SCRIPT_UPDATE="False"
+  - OCR_API由于青龙python版本问题无法直接使用dddocr需要自行搭建API，搭建方式：https://github.com/CHERWING/CHERWIN_OCR
+  - 如果你的环境可以安装dddocr库则可以自行修改代码
 
 ## ✨ wxpusher一对一推送功能
 - 先到https://wxpusher.zjiecode.com/ 注册-新建应用-获取appToken及关注二维码或链接
@@ -99,6 +101,11 @@
       3. 抓取.../public/api/login获取thirdId@wid
       4. 多账号#或&分割 
 
+## 🔥 统一茄皇监控 TYQH_JK.py
+- ✔ 支持一对一推送。
+- 🎉 功能：2-6月每月1日9点55到10点1分，每10秒执行一次
+
+  
 ## 🔥 海底捞小程序 HDL.py
 - ✔ 支持一对一推送。
 - 🎉 功能：签到
@@ -180,7 +187,7 @@
 - 🎉 功能：签到
 - ✨ 变量：手机号@密码
 
-## 🔥 蜜雪冰城小程序签到 KFHS.py
+## 🔥 蜜雪冰城小程序签到 MXBC.py
 - ✔ 支持一对一推送。
 - 🎉 功能：签到
 
