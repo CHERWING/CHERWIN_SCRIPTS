@@ -3,8 +3,7 @@
 # -------------------------------
 # @Author : cherwin
 # -------------------------------
-# cron "*/10 9:58-10:01 1-31 2-6 * *" script-path=xxx.py,tag=匹配cron用
-# 2-6月每月1日9点55到10点1分，每10秒执行一次
+# cron "50 9:59 1-31 2-6 * *" script-path=xxx.py,tag=匹配cron用
 # const $ = new Env('统一茄皇监控')
 import hashlib
 import json
@@ -358,7 +357,7 @@ export OCR_API= 'http://localhost:3721'
 ✨ 由于青龙python版本问题无法直接使用dddocr需要自行搭建API，搭建方式：https://github.com/CHERWING/CHERWIN_OCR
 ✨ 如果你的环境可以安装dddocr库则可以替换代码内的【self.get_CapCode】为【self.get_CapCode_local】
 export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
-✨ 推荐定时：*/10 9:59-10:01 1-31 2-6 * * 2-6月每月1日9点55到10点1分，每10秒执行一次
+✨ 推荐定时：50 9:59 1-31 2-6 * * 
 ✨ 第一个账号助力作者，其余互助
 ✨✨✨ @Author CHERWIN✨✨✨
                 ''')
