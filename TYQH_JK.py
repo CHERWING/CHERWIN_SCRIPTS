@@ -3,7 +3,8 @@
 # -------------------------------
 # @Author : cherwin
 # -------------------------------
-# cron "50 9:59 1-31 2-6 * *" script-path=xxx.py,tag=匹配cron用
+# cron "*/10 9:59 1-31 2-6 * *" script-path=xxx.py,tag=匹配cron用
+# 2-6月每月1日9点55到10点1分，每10秒执行一次
 # const $ = new Env('统一茄皇监控')
 import hashlib
 import json
@@ -341,7 +342,12 @@ def import_Tools():
     global CHERWIN_TOOLS,ENV, APP_INFO, TIPS, TIPS_HTML, AuthorCode
     import CHERWIN_TOOLS
     ENV, APP_INFO, TIPS, TIPS_HTML, AuthorCode = CHERWIN_TOOLS.main(APP_NAME, local_script_name, ENV_NAME,local_version)
+import threading
 
+def execute_task(infos, index):
+    run_result = RUN(infos, index).userTask()
+    if not run_result:
+        return
 
 if __name__ == '__main__':
     APP_NAME = '统一茄皇监控'
@@ -357,7 +363,7 @@ export OCR_API= 'http://localhost:3721'
 ✨ 由于青龙python版本问题无法直接使用dddocr需要自行搭建API，搭建方式：https://github.com/CHERWING/CHERWIN_OCR
 ✨ 如果你的环境可以安装dddocr库则可以替换代码内的【self.get_CapCode】为【self.get_CapCode_local】
 export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
-✨ 推荐定时：50 9:59 1-31 2-6 * * 
+✨ 推荐定时：*/10 9:59 1-31 2-6 * * 2-6月每月1日9点55到10点1分，每10秒执行一次
 ✨ 第一个账号助力作者，其余互助
 ✨✨✨ @Author CHERWIN✨✨✨
                 ''')
@@ -389,9 +395,33 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
     tokens = CHERWIN_TOOLS.ENV_SPLIT(token)
     # print(tokens)
     if len(tokens) > 0:
-        print(f"\n>>>>>>>>>>共获取到{len(tokens)}个账号<<<<<<<<<<")
-        access_token = []
-        for index, infos in enumerate(tokens):
-            run_result = RUN(infos, index).userTask()
-            if not run_result: continue
+        print(f"\n>>>>>>>>>> 共获取到{len(tokens)} 个账号 <<<<<<<<<<")
+        # access_token = []
+        # threads = []
+        # for index, infos in enumerate(tokens):
+        #     thread = threading.Thread(target=execute_task, args=(infos, index))
+        #     threads.append(thread)
+        #     thread.start()
+        # 
+        # for thread in threads:
+        #     thread.join()
+    while True:
+        current_time = time.localtime()
+        if (current_time.tm_hour == 9 and current_time.tm_min == 59 and current_time.tm_sec >= 59) or \
+                (current_time.tm_hour == 10 and current_time.tm_min == 1 and current_time.tm_sec <= 59):
+            if len(tokens) > 0:
+                print(f"\n>>>>>>>>>> 共获取到{len(tokens)} 个账号 <<<<<<<<<<")
+                access_token = []
+                threads = []
+                for index, infos in enumerate(tokens):
+                    thread = threading.Thread(target=execute_task, args=(infos, index))
+                    threads.append(thread)
+                    thread.start()
+
+                for thread in threads:
+                    thread.join()
+        elif current_time.tm_hour == 10 and current_time.tm_min > 5:
+            break
+        else:
+            time.sleep(1)
 
