@@ -6,7 +6,7 @@ import sys
 import requests
 from http import HTTPStatus
 
-NOW_TOOLS_VERSION = '2024.04.08'
+NOW_TOOLS_VERSION = '2024.05.04'
 if os.path.isfile('DEV_ENV.py'):
     import DEV_ENV
 # 尝试导入包
@@ -362,39 +362,29 @@ def CAPCODE(captcha_slider, captcha_bg):
     else:
         print('ddddocr 模块无法导入，函数无法执行。')
         return False
-#
-# def OCR_API(target_b64str,bg_b64str):
-#     import base64
-#     host = 'http://192.168.10.160'
-#     jsonstr = json.dumps({'target_img': target_b64str, 'bg_img': bg_b64str})
-#     api_url = f"{host}/slide/match/b64/json"
-#     resp = requests.post(api_url, data=base64.b64encode(jsonstr.encode()).decode())
-#     print(f"{api_url=}, {resp.text=}")
-#     return resp.json().get('target_y',0)
-#
-#
-# def BASE64_TO_IMG(base64_string, output_path):
-#     import base64
-#     import io
-#     Image = import_or_install('Pillow', 'PIL.Image')
-#
-#     if Image:
-#         try:
-#             # 解码base64字符串
-#             image_data = base64.b64decode(base64_string)
-#             # 将字节数据转换为字节流
-#             image_buf = Image.open(io.BytesIO(image_data))
-#             # 转换为RGB模式
-#             image_buf = image_buf.convert('RGB')
-#             # 保存图片到指定路径
-#             image_buf.save(output_path, format='JPEG')
-#             return True
-#         except Exception as e:
-#             print(f'发生错误：{e}')
-#             return False
-#     else:
-#         print('需要的模块[PIL]无法导入，函数无法执行。')
-#         return False
+
+def BASE64_TO_IMG(base64_string, output_path):
+    import base64
+    import io
+    Image = import_or_install('Pillow', 'PIL.Image')
+
+    if Image:
+        try:
+            # 解码base64字符串
+            image_data = base64.b64decode(base64_string)
+            # 将字节数据转换为字节流
+            image_buf = Image.open(io.BytesIO(image_data))
+            # 转换为RGB模式
+            image_buf = image_buf.convert('RGB')
+            # 保存图片到指定路径
+            image_buf.save(output_path, format='JPEG')
+            return True
+        except Exception as e:
+            print(f'发生错误：{e}')
+            return False
+    else:
+        print('需要的模块[PIL]无法导入，函数无法执行。')
+        return False
 
 def send_wxpusher(UID, one_msg, APP_NAME, help=False):
     WXPUSHER = os.environ.get('WXPUSHER', False)
