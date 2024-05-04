@@ -9,6 +9,8 @@ from http import HTTPStatus
 NOW_TOOLS_VERSION = '2024.05.04'
 if os.path.isfile('DEV_ENV.py'):
     import DEV_ENV
+
+
 # 尝试导入包
 def import_or_install(package_name, import_name=None):
     # 如果传入了 import_name，则使用它来检查模块，否则默认与包名相同
@@ -37,6 +39,7 @@ def import_or_install(package_name, import_name=None):
     except Exception as e:
         print(f"处理 {package_name} 模块时发生错误. 错误信息: {e}")
 
+
 def SAVE_INVITE_CODE(file_name, new_data):
     # 读取现有JSON文件（如果存在）
     try:
@@ -62,6 +65,7 @@ def SAVE_INVITE_CODE(file_name, new_data):
     with open(file_name, 'w', encoding='utf-8') as file:
         json.dump(data, file, indent=4)
 
+
 # 将参数转换为字典
 def create_dict_from_string(self, data_string):
     params = {}
@@ -70,6 +74,7 @@ def create_dict_from_string(self, data_string):
         key, value = pair.split('=')
         params[key] = value
     return params
+
 
 def compare_versions(local_version, server_version):
     local_parts = local_version.split('.')  # 将本地版本号拆分成数字部分
@@ -86,6 +91,7 @@ def compare_versions(local_version, server_version):
         return True  # 当前版本位数较短，即版本号形如 x.y 比 x.y.z 低
     else:
         return False  # 当前版本与服务器版本相同或更高
+
 
 def CHECK_UPDATE(local_version, server_version_url, server_script_url, script_filename):
     """
@@ -135,13 +141,15 @@ def CHECK_UPDATE(local_version, server_version_url, server_script_url, script_fi
 
     except requests.exceptions.RequestException as e:
         print(f'发生网络错误：{e}')
-        
+
     except Exception as e:
         print(f'发生未知错误：{e}')
 
     return False  # 返回 False 表示没有进行更新操作
 
-def CHECK_UPDATE_NEW(local_version, server_version, server_script_url, script_filename,server_version_url=None,APP_NAME=None):
+
+def CHECK_UPDATE_NEW(local_version, server_version, server_script_url, script_filename, server_version_url=None,
+                     APP_NAME=None):
     """
     检查版本并更新
 
@@ -165,7 +173,7 @@ def CHECK_UPDATE_NEW(local_version, server_version, server_script_url, script_fi
             if "code" in server_version:
                 print('【获取远程版本号失败,设为本地同版本】')
                 server_version = local_version
-        if not server_version :server_version = NOW_TOOLS_VERSION
+        if not server_version: server_version = NOW_TOOLS_VERSION
         print(f'本地版本：【{local_version}】')
         print(f'服务器版本：【{server_version}】')
 
@@ -176,7 +184,7 @@ def CHECK_UPDATE_NEW(local_version, server_version, server_script_url, script_fi
             if AUTO_UPDATE:
                 print(">>>>>>>发现新版本的脚本，默认自动更新，准备更新...")
                 print(">>>>>>>禁用更新请定义变量export SCRIPT_UPDATE = 'False'")
-                if down_file(script_filename,server_script_url):
+                if down_file(script_filename, server_script_url):
                     print(f'请重新运行新脚本\n')
                     return True
             else:
@@ -190,11 +198,12 @@ def CHECK_UPDATE_NEW(local_version, server_version, server_script_url, script_fi
         server_base_url = f"https://py.cherwin.cn/{APP_NAME}/"
         server_script_url = f"{server_base_url}{script_filename}"
         CHECK_UPDATE_NEW(local_version, server_version, server_script_url, script_filename, APP_NAME=APP_NAME)
-        
+
     except Exception as e:
         print(f'发生未知错误：{e}')
 
     return False  # 返回 False 表示没有进行更新操作
+
 
 def down_file(filename, file_url):
     print(f'开始下载：{filename}，下载地址：{file_url}')
@@ -221,6 +230,8 @@ def down_file(filename, file_url):
     except Exception as e:
         print(f'【{filename}】下载失败：{str(e)}')
         return False
+
+
 def get_AuthorInviteCode(url):
     global AuthorCode
     try:
@@ -268,7 +279,8 @@ def GET_TIPS(server_base_url):
 ***********通知内容************\n
 ''')
 
-def CHECK_PARAMENTERS(index, input_string,required_parameters):
+
+def CHECK_PARAMENTERS(index, input_string, required_parameters):
     # required_parameters = ['deviceid', 'jysessionid', 'shopid', 'memberid', 'access_token', 'sign']
 
     # 记录缺少的参数
@@ -322,6 +334,7 @@ def QIANWEN(tongyiSysPromt, content, api_key):
     else:
         print('dashscope 模块无法导入，函数无法执行。')
 
+
 # 取环境变量，并分割
 def ENV_SPLIT(input_str):
     parts = []
@@ -335,16 +348,17 @@ def ENV_SPLIT(input_str):
             else:
                 parts.append(part)
         # print(parts)
-        return(parts)
+        return (parts)
 
     elif '#' in input_str:
         hash_parts = input_str.split('#')
         # print(hash_parts)
-        return(hash_parts)
+        return (hash_parts)
     else:
         out_str = str(input_str)
         # print([out_str])
-        return([out_str])
+        return ([out_str])
+
 
 # 使用导入的模块进行验证码识别
 def CAPCODE(captcha_slider, captcha_bg):
@@ -362,6 +376,7 @@ def CAPCODE(captcha_slider, captcha_bg):
     else:
         print('ddddocr 模块无法导入，函数无法执行。')
         return False
+
 
 def BASE64_TO_IMG(base64_string, output_path):
     import base64
@@ -386,6 +401,7 @@ def BASE64_TO_IMG(base64_string, output_path):
         print('需要的模块[PIL]无法导入，函数无法执行。')
         return False
 
+
 def send_wxpusher(UID, one_msg, APP_NAME, help=False):
     WXPUSHER = os.environ.get('WXPUSHER', False)
     if WXPUSHER:
@@ -396,11 +412,11 @@ def send_wxpusher(UID, one_msg, APP_NAME, help=False):
         print(push_res)
 
 
-def wxpusher(UID,msg,title,help=False):
+def wxpusher(UID, msg, title, help=False):
     """利用 wxpusher 的 web api 发送 json 数据包，实现微信信息的发送"""
     WXPUSHER = os.environ.get('WXPUSHER', False)
     if WXPUSHER:
-        if help:title = title+'互助'
+        if help: title = title + '互助'
         print('\n------开始wxpusher推送------')
         print(f'标题：【{title}】\n内容：{msg}')
         webapi = 'http://wxpusher.zjiecode.com/api/send/message'
@@ -410,7 +426,7 @@ def wxpusher(UID,msg,title,help=False):
             "appToken": WXPUSHER,
             "content": f'{title}<br>{msg}<br>{tips}',
             # "summary": msg[:99],  # 该参数可选，默认为 msg 的前10个字符
-            "summary":title,
+            "summary": title,
             "contentType": 2,
             "uids": [UID],
             "url": "https://gj.cherwin.cn"
@@ -429,16 +445,18 @@ def wxpusher(UID,msg,title,help=False):
         except Exception as e:
             return f"发生意外错误：{str(e)}"
 
+
 def RESTART_SCRIPT(RESTART_SCRIPT_NAME):
     python = sys.executable
     os.execl(python, RESTART_SCRIPT_NAME, *sys.argv[1:])
+
 
 def CHECK():
     global CHERWIN_SCRIPT_CONFIG
     print('>>>>>>>开始获取版本信息...')
     baseurl = 'https://py.cherwin.cn/'
     TOOLS_NAME = 'CHERWIN_TOOLS.py'
-    server_script_url = f'{baseurl}{TOOLS_NAME}'
+    server_script_url = f'https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/{TOOLS_NAME}'
     try:
         response = requests.get(f'{baseurl}CHERWIN_SCRIPT_CONFIG.json', verify=False)
         response.encoding = 'utf-8'
@@ -458,15 +476,14 @@ def CHECK():
         return False
 
 
-
-def main(APP_NAME,local_script_name,ENV_NAME,local_version):
-    global APP_INFO,TIPS,TIPS_HTML
+def main(APP_NAME, local_script_name, ENV_NAME, local_version):
+    global APP_INFO, TIPS, TIPS_HTML
     git_url = f'https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/{local_script_name}'
     if CHECK():
         APP_INFO = CHERWIN_SCRIPT_CONFIG.get("APP_CONFIG", {}).get(ENV_NAME, {})
         # print(APP_INFO)
         server_version = APP_INFO.get('NEW_VERSION', '')
-        if CHECK_UPDATE_NEW(local_version, server_version, git_url, local_script_name,APP_NAME=APP_NAME):
+        if CHECK_UPDATE_NEW(local_version, server_version, git_url, local_script_name, APP_NAME=APP_NAME):
             print('更新成功，请重新运行脚本！')
 
         if not APP_INFO.get('ENABLE', False):
@@ -474,11 +491,12 @@ def main(APP_NAME,local_script_name,ENV_NAME,local_version):
             exit()
         TIPS = APP_INFO.get('NTC', '') if APP_INFO.get('NTC', '') else CHERWIN_SCRIPT_CONFIG.get('GLOBAL_NTC', '')
 
-        TIPS_HTML = APP_INFO.get('NTC', '') if APP_INFO.get('NTC', '') else CHERWIN_SCRIPT_CONFIG.get('GLOBAL_NTC_HTML','')
+        TIPS_HTML = APP_INFO.get('NTC', '') if APP_INFO.get('NTC', '') else CHERWIN_SCRIPT_CONFIG.get('GLOBAL_NTC_HTML',
+                                                                                                      '')
         ENV = os.environ.get(ENV_NAME)
         AuthorCode = get_AuthorInviteCode(f'https://yhsh.ziyuand.cn/{ENV_NAME}_INVITE_CODE.json')
 
-        return ENV,APP_INFO,TIPS,TIPS_HTML,AuthorCode
+        return ENV, APP_INFO, TIPS, TIPS_HTML, AuthorCode
     else:
         exit()
 
