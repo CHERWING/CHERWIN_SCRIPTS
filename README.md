@@ -24,7 +24,7 @@
   - ck变量名称均为脚本名称，如永辉生活变量：export YHSH="xxxx"
   - SCRIPT_UPDATE变量设置是否自动更新默认开启，关闭请设置export SCRIPT_UPDATE="False"
   - OCR_API由于青龙python版本问题无法直接使用dddocr需要自行搭建API，搭建方式：https://github.com/CHERWING/CHERWIN_OCR
-  - 如果你的环境可以安装dddocr库则可以自行修改代码
+  - 如果你的环境可以安装[ddddocr](https://github.com/sml2h3/ddddocr)库则可以自行修改代码
 
 ## ✨ wxpusher一对一推送功能
 - 先到https://wxpusher.zjiecode.com/ 注册-新建应用-获取appToken及关注二维码或链接
