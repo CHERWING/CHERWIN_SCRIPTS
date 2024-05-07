@@ -83,7 +83,7 @@ class RUN:
         self.list_index = 0
         self.isFirstTask = True
 
-    def get_point(self):
+    def get_point(self,END=False):
         Log('>>>>>>获取积分信息')
         json_data = {}
         response = s.post(f'{self.baseUrl}user/point/get', headers=self.headers,json=json_data)
@@ -95,8 +95,11 @@ class RUN:
             point=data.get('point',0)
             mobile=data.get('mobile','')
             mobile=mobile[:3] + "*" * 4 + mobile[7:]
-            Log(f'>>当前用户：【{mobile}】')
-            Log(f'>>当前积分：【{point}】')
+            if END:
+                Log(f'>>执行后积分：【{point}】')
+            else:
+                print(f'>>当前用户：【{mobile}】')
+                print(f'>>当前积分：【{point}】')
             return True
         else:
             Log('可能token失效了')
@@ -113,18 +116,21 @@ class RUN:
                 data=response.get('data',{})
                 dayList=data.get('dayList',[{}])
                 signDays=data.get('signDays',0)
-                Len_dayList=len(dayList)
-                dates = dayList[Len_dayList-1].get('date','')
-                current_date = date.today()
-                parsed_date = datetime.strptime(dates, '%Y-%m-%d').date()
-                if parsed_date == current_date:
-                    Log(f'今日已签到,连续签到【{signDays}】天')
-                else:
-                    self.sign()
+                for day in dayList:
+                    dates = day.get('date','')
+                    point = day.get('point','')
+                    signFlag = day.get('signFlag','')
+                    current_date = date.today()
+                    parsed_date = datetime.strptime(dates, '%Y-%m-%d').date()
+                    if parsed_date == current_date:
+                        if signFlag == 1:
+                            Log(f'>>今日已签到,连续签到【{signDays}】天,获得【{point}】积分')
+                        else:
+                            self.sign()
             else:
                 Log(f"查询签到失败，{response['msg']}")
     def sign(self):
-            Log('>>>>>>签到')
+            Log('>>>签到')
             json_data = {}
             response = s.post(f'{self.baseUrl}member/sign/v2/userSignIn', headers=self.headers,json=json_data)
             point_info = response.json()
@@ -134,7 +140,7 @@ class RUN:
                 point=point_info['data']['point']
                 Log(f'>>签到成功获得：【{point}】积分')
             else:
-                Log(f"签到失败，{point_info['msg']}")
+                Log(f">>签到失败，{point_info['msg']}")
 
 
 
@@ -142,7 +148,7 @@ class RUN:
         print(f"\n开始执行第{self.index}个账号--------------->>>>>")
         if self.get_point():
             self.Check_sign()
-            self.get_point()
+            self.get_point(True)
             time.sleep(2)
             self.sendMsg()
         else:
@@ -208,7 +214,7 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
 ✨✨✨ @Author CHERWIN✨✨✨
 ''')
     local_script_name = os.path.basename(__file__)
-    local_version = '2024.04.06'
+    local_version = '2024.05.08'
     if os.path.isfile('CHERWIN_TOOLS.py'):
         import_Tools()
     else:
