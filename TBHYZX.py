@@ -209,7 +209,7 @@ def import_Tools():
 if __name__ == '__main__':
     APP_NAME = '特步会员中心小程序'
     ENV_NAME = 'TBHYZX'
-    CK_URL = 'https://wxa-tp.ezrpro.com/myvip/Base/User/WxAppOnLoginNew取值：'
+    CK_URL = 'https://wxa-tp.ezrpro.com/myvip/Base/User/WxAppOnLoginNew'
     CK_NAME = 'Result里的Fields全部内容'
     print(f'''
 ✨✨✨ {APP_NAME}签到✨✨✨
@@ -220,8 +220,8 @@ if __name__ == '__main__':
       授权登陆
       打开抓包工具
       找{CK_URL}请返回值[{CK_NAME}]
-      复制用@连接
-参数示例：6a3bdcc07fe9xxxxxx1@oMfWKs0oxxxxxxxx@12494xxxx
+参数示例：
+{"ezr-cop-id":"xx","ezr-vuid":"xxx","ezr-userid":"xx","ezr-sv":"x","ezr-st":"xxxx","ezr-ss":"xxxxx"}
 ✨ ✨✨wxpusher一对一推送功能，
   ✨需要定义变量export WXPUSHER=wxpusher的app_token，不设置则不启用wxpusher一对一推送
   ✨需要在{ENV_NAME}变量最后添加@wxpusher的UID
