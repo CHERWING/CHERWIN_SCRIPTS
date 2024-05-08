@@ -30,6 +30,7 @@
 - 先到https://wxpusher.zjiecode.com/ 注册-新建应用-获取appToken及关注二维码或链接
 - 需要定义变量export WXPUSHER=wxpusher的app_token，不设置则不启用wxpusher一对一推送
 - 扫描上方二维码并加入推送群组，然后在提交的变量最后添加@wxpusher的UID。
+  
 ## 🔥 乐事心动社小程序 LSXDS.py
 - ✔ 支持一对一推送。
 - 🎉 功能：积分签到，分享任务
@@ -43,6 +44,20 @@
   <img width="150" src="https://github.com/CHERWING/CHERWIN_SCRIPTS/assets/160421895/75d87630-867f-41fe-8367-d28ce6bf3bd8">
     <img width="150" src="https://github.com/CHERWING/CHERWIN_SCRIPTS/assets/160421895/528864ed-bde4-490e-bcd9-edb775035129">
       <img width="150" src="https://github.com/CHERWING/CHERWIN_SCRIPTS/assets/160421895/b1e5866b-f201-4636-b0f3-c97e61efbf44">
+      
+## 🔥 特步会员中心小程序 TBHYZX.py
+- ✔ 支持一对一推送。
+- 🎉 功能：积分签到
+- ⚙️ 抓包步骤：
+      打开特步会员中心小程序
+      授权登陆
+      打开抓包工具
+      找https://campuscrm.pepsico.com.cn/web/user/member/access-refresh返回值[Authorization]
+  参数示例：
+  	{"ezr-cop-id":"555","ezr-vuid":"5555","ezr-userid":"asafafdafa","ezr-sv":"1","ezr-st":"123123123","ezr-ss":"aaaaaaa"}
+- 💬 小程序邀请码
+  
+  <img width="150" src="https://github.com/CHERWING/CHERWIN_SCRIPTS/assets/160421895/b41fa8a6-f110-47db-931f-d5f0af873a2c">
 
 
 
