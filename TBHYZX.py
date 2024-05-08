@@ -186,7 +186,7 @@ class RUN:
                 return False
 
     def main(self):
-        print(f"\n开始执行第{self.index}个账号--------------->>>>>")
+        Log(f"\n开始执行第{self.index}个账号--------------->>>>>")
         if self.WxAppOnLoginNew():
             self.GetVipCardInfoByVipId()
             self.GetSignInDtlInfo()
