@@ -341,7 +341,7 @@ if __name__ == '__main__':
     APP_NAME = '乐事心动社小程序'
     ENV_NAME = 'LSXDS'
     CK_URL = 'https://campuscrm.pepsico.com.cn/web/user/member/access-refresh'
-    CK_NAME = 'Authorization@memberId'
+    CK_NAME = 'Authorization'
     print(f'''
 ✨✨✨ {APP_NAME}签到✨✨✨
 ✨ 功能：
