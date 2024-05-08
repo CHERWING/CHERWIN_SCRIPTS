@@ -352,7 +352,10 @@ if __name__ == '__main__':
       授权登陆
       打开抓包工具
       找{CK_URL}返回值[{CK_NAME}]
-      复制用@连接
+邀请码：
+https://private-user-images.githubusercontent.com/160421895/328828056-75d87630-867f-41fe-8367-d28ce6bf3bd8.png
+https://private-user-images.githubusercontent.com/160421895/328828354-528864ed-bde4-490e-bcd9-edb775035129.png
+https://private-user-images.githubusercontent.com/160421895/328828400-b1e5866b-f201-4636-b0f3-c97e61efbf44.png
 参数示例：eyJhbGciOiJxxxxxxxxx@8888888
 ✨ ✨✨wxpusher一对一推送功能，
   ✨需要定义变量export WXPUSHER=wxpusher的app_token，不设置则不启用wxpusher一对一推送
