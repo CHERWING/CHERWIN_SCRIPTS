@@ -52,9 +52,8 @@
       打开特步会员中心小程序
       授权登陆
       打开抓包工具
-      找https://campuscrm.pepsico.com.cn/web/user/member/access-refresh返回值[Authorization]
-  参数示例：
-  	{"ezr-cop-id":"555","ezr-vuid":"5555","ezr-userid":"asafafdafa","ezr-sv":"1","ezr-st":"123123123","ezr-ss":"aaaaaaa"}
+      找https://wxa-tp.ezrpro.com/myvip/Base/User/WxAppOnLoginNew请求头里的code
+  参数示例:0a3xDicccccccxxxxxxxx
 - 💬 小程序邀请码
   
   <img width="150" src="https://github.com/CHERWING/CHERWIN_SCRIPTS/assets/160421895/b41fa8a6-f110-47db-931f-d5f0af873a2c">
