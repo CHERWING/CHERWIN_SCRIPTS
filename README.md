@@ -30,6 +30,16 @@
 - 先到https://wxpusher.zjiecode.com/ 注册-新建应用-获取appToken及关注二维码或链接
 - 需要定义变量export WXPUSHER=wxpusher的app_token，不设置则不启用wxpusher一对一推送
 - 扫描上方二维码并加入推送群组，然后在提交的变量最后添加@wxpusher的UID。
+
+## 🔥 网易生活研究社 WYSHYJS.js
+- ✔ 支持一对一推送。
+- 🎉 功能：积分签到
+- ⚙️ 抓包步骤：
+      打开网易生活研究社小程序
+      授权登陆
+      打开抓包工具
+      抓miniprogram.dingwei.netease.com下的userId@token填入变量
+
   
 ## 🔥 乐事心动社小程序 LSXDS.py
 - ✔ 支持一对一推送。
@@ -177,7 +187,7 @@
 - ✨ 抓包步骤：
       1. 开始抓包
       2. 打开韵达快递小程序
-      3. 抓取任意url获取x-token或者token
+      3.  找https://api.ztomember.com/api/user/point/get请求头里的[token]，短的不是长的
       4. 多账号#或&分割
 
 ## 🔥 极兔速递小程序 JTSD.py
