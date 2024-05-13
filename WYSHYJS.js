@@ -11,7 +11,7 @@
  */
 
 //===============脚本版本=================//
-let local_version = "2024.05.13";
+let local_version = "2024.05.14";
 //=======================================//
 const APP_NAME = '网易生活研究社小程序'
 const ENV_NAME = 'WYSHYJS'
@@ -22,7 +22,7 @@ const Notify = 1 		//0为关闭通知,1为打开通知,默认为1
 const axios = require('axios');
 const parser = require("@babel/parser");
 const fs = require('fs');
-// const path = require('path');
+const path = require('path');
 const xpath = require('xpath')
     , XmldomParser = require('xmldom').DOMParser;
 const domParser = new XmldomParser({
@@ -51,6 +51,11 @@ let token_new = ''
 let new_token = ''
 let orderNum = ''
 let signOperatingId = ''
+let isLogin = false
+let num = 0
+let userToken = ''
+let CASH_TOKEN = {}
+let CASH_PATH = './WYSHYJS_cash.json'
 
 console.log(`✨✨✨ ${APP_NAME} ✨✨✨
 ` +
@@ -72,8 +77,11 @@ console.log(`✨✨✨ ${APP_NAME} ✨✨✨
     '✨✨✨ @Author CHERWIN✨✨✨')
 
 //=======================================//
+UserCookieArr = ENV_SPLIT(UserCookie)
 !(async () => {
-        if (!(await Envs())) {
+        if (!(UserCookieArr)) {
+            console.log(`未定义${ENV_NAME}变量`)
+            process.exit();
         } else {
             // 版本检测
             await getVersion();
@@ -94,16 +102,42 @@ console.log(`✨✨✨ ${APP_NAME} ✨✨✨
             for (let index = 0; index < UserCookieArr.length; index++) {
                 one_msg = ''
                 let send_UID = ''
-                let num = index + 1
+                num = index + 1
                 Log(`\n================ 开始第 ${num} 个账号 --------------->>>>>`)
+
                 // console.log(UserCookieArr[index])
-                let split_info = UserCookieArr[index].split("@")
+                let split_info = UserCookieArr[index].split("@");
                 userId = split_info[0];
                 userToken = split_info[1];
+
+                CASH_TOKEN = readUserData(CASH_PATH);
+                if (!CASH_TOKEN[userId] || !CASH_TOKEN[userId]['envToken']) {
+                    console.log('未发现envtoken缓存，开始生成缓存文件');
+                    const newData = {};
+                    newData[userId] = {
+                        "envToken": userToken
+                    };
+                    saveUserData(CASH_PATH, newData);
+                } else {
+                    if (userToken != CASH_TOKEN[userId]['envToken']) {
+                        console.log('环境变量有更新，开始更新缓存，使用新环境变量');
+                        const newData = {};
+                        newData[userId] = {
+                            "envToken": userToken
+                        };
+                        saveUserData(CASH_PATH, newData);
+                        userToken = split_info[1];
+                    } else if (CASH_TOKEN[userId]['newToken']) {
+                        console.log('存在newToken，使用新token');
+                        userToken = CASH_TOKEN[userId]['newToken'];
+                    }
+                }
                 // console.log(userId)
                 // console.log(userToken)
                 let len_split_info = split_info.length
                 let last_info = split_info[len_split_info - 1]
+
+                // await getMemberInfo(2 * 1000);
                 delay()
                 await start();
                 await $.wait(2000);
@@ -124,45 +158,6 @@ console.log(`✨✨✨ ${APP_NAME} ✨✨✨
     .catch((e) => log(e))
     .finally(() => $.done())
 
-
-async function downloadFile(fileUrl, downloadPath) {
-    try {
-        const response = await axios({
-            method: 'get',
-            url: fileUrl,
-            responseType: 'stream' // 指定响应类型为流
-        });
-
-        // 创建可写流，用于保存下载的文件
-        const fileStream = fs.createWriteStream(downloadPath);
-
-        // 监听 'data' 事件，将数据写入文件流
-        response.data.pipe(fileStream);
-
-        // 返回 Promise，在文件下载完成时 resolve
-        return new Promise((resolve, reject) => {
-            fileStream.on('finish', function() {
-                console.log('更新成功！✅，请重新运行脚本');
-                process.exit();
-                resolve();
-            });
-
-            // 监听 'error' 事件，处理错误
-            fileStream.on('error', function(err) {
-                console.error('更新失败❌，请手动更新:', error);
-                console.error('写入文件时发生错误:', err);
-                reject(err);
-            });
-        });
-    } catch (error) {
-        console.error('下载文件时发生错误:', error);
-        throw error;
-    }
-}
-
-
-
-
 /**
  * 开始脚本
  * @returns {Promise<boolean>}
@@ -171,7 +166,7 @@ async function start() {
 
     await getMemberInfo(2 * 1000);
     await $.wait(2000)
-    if (userUnionid == '') {
+    if (isLogin == false) {
         Log(`账号【${num}】登录异常，自动跳过任务！❌`);
         return false;
     }
@@ -403,7 +398,7 @@ async function signResult(baseUrl, baseHost) {
                 let result = response.data
                 let success = result.success;
                 if (success == true) {
-                    // console.log(result)
+                    console.log(result)
                     let data = result.data
                     signResult = data.signResult
                     if (signResult == 1) {
@@ -467,10 +462,23 @@ async function getMemberInfo(timeout = 2000) {
                     userPhone = result.phone
                     userUnionid = result.unionId
                     userOpenid = result.openid
-                    Log(`>手机号：【${userPhone}】,登录成功: ✅ `)
-                    // Log(`>手机号：【${userPhone}】`)
-                    // Log(`>unionId：【${userUnionid}】`)
-                    // Log(`>openid：【${userOpenid}】`)
+                    let userNewToken = result.token
+                    if (userPhone != undefined){
+                        isLogin = true
+                        Log(`>手机号：【${userPhone}】,登录成功: ✅ `)
+                        const newData = {};
+                        newData[userId] = {
+                                "oldToken":userToken,
+                                "newToken":userNewToken
+                        };
+                        saveUserData(CASH_PATH, newData)
+                        // Log(`>手机号：【${userPhone}】`)
+                        // Log(`>unionId：【${userUnionid}】`)
+                        // Log(`>openid：【${userOpenid}】`)
+                    }else{
+                        isLogin = false
+                    }
+
                 } else {
                     addNotifyStr(`登录失败❌，原因是：${data.msg}`, true)
                 }
@@ -744,33 +752,60 @@ async function send_wxpusher(UID, send_msg, title, help = false) {
 // ============================================变量检查============================================ \\
 async function Envs() {
     if (UserCookie) {
-
         if (UserCookie.includes('&')) {
             var amp_parts = UserCookie.split('&');
             for (var i = 0; i < amp_parts.length; i++) {
                 if (amp_parts[i].includes('#')) {
                     var hash_parts = amp_parts[i].split('#');
                     for (var j = 0; j < hash_parts.length; j++) {
+
                         UserCookieArr.push(hash_parts[j]);
                     }
                 } else {
                     UserCookieArr.push(amp_parts[i]);
                 }
             }
-
+            console.log(UserCookieArr)
+            return true;
         } else if (UserCookie.includes('#')) {
             hash_parts = UserCookie.split('#');
             UserCookieArr.push(hash_parts);
-
+            console.log(UserCookieArr)
+            return true;
         } else {
             var out_str = UserCookie.toString();
             UserCookieArr.push(out_str);
+            console.log(UserCookieArr)
+            return true;
         }
     } else {
         console.log(`\n 系统变量【KWW】未定义❌`)
         return;
     }
     return true;
+}
+function ENV_SPLIT(input_str) {
+    var parts = [];
+    if (input_str.includes('&')) {
+        var amp_parts = input_str.split('&');
+        for (var i = 0; i < amp_parts.length; i++) {
+            if (amp_parts[i].includes('#')) {
+                var hash_parts = amp_parts[i].split('#');
+                for (var j = 0; j < hash_parts.length; j++) {
+                    parts.push(hash_parts[j]);
+                }
+            } else {
+                parts.push(amp_parts[i]);
+            }
+        }
+        return parts;
+    } else if (input_str.includes('#')) {
+        var hash_parts = input_str.split('#');
+        return hash_parts;
+    } else {
+        var out_str = input_str.toString();
+        return [out_str];
+    }
 }
 
 // ============================================发送消息============================================ \\
@@ -851,6 +886,95 @@ function getUA() {
     $.appVersion = buildMap[$.build]
     return `jdapp;iPhone;${$.appVersion};${$.osVersion};${$.UUID};M/5.0;${network};ADID/;model/${$.mobile};addressid/;appBuild/${$.build};jdSupportDarkMode/0;Mozilla/5.0 (iPhone; CPU iPhone OS ${$.osVersion.replace(/\./g, "_")} like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1;`
 }
+
+function saveUserData(fileName, newData) {
+    try {
+        let data;
+        try {
+            // 读取现有的 JSON 文件（如果存在）
+            data = JSON.parse(fs.readFileSync(fileName, 'utf8'));
+        } catch (err) {
+            // 如果文件不存在，创建所需目录并一个新的空 JSON 文件
+            if (err.code === 'ENOENT') {
+                const directory = path.dirname(fileName);
+                if (!fs.existsSync(directory)) {
+                    fs.mkdirSync(directory, { recursive: true });
+                }
+                data = {};
+            } else {
+                throw err;
+            }
+        }
+
+        // 检查是否已存在相同的键，如果存在，合并数据
+        for (const key in newData) {
+            if (newData.hasOwnProperty(key)) {
+                if (data.hasOwnProperty(key)) {
+                    // 如果键已存在，将新数据合并到现有数据中
+                    Object.assign(data[key], newData[key]);
+                } else {
+                    // 如果键不存在，直接插入新数据
+                    data[key] = newData[key];
+                }
+            }
+        }
+
+        // 将更新后的数据写入 JSON 文件
+        fs.writeFileSync(fileName, JSON.stringify(data, null, 4));
+        console.log(`数据已保存到文件 ${fileName}`);
+    } catch (err) {
+        console.error(`保存数据到 ${fileName} 时发生错误：`, err);
+    }
+}
+// 读取用户数据
+function readUserData(filename) {
+    try {
+        if (fs.existsSync(filename)) {
+            return JSON.parse(fs.readFileSync(filename, 'utf8'));
+        } else {
+            console.log(`文件 ${filename} 不存在，返回空对象`);
+            return {};
+        }
+    } catch (err) {
+        console.error(`读取 ${filename} 时发生错误：`, err);
+        return null;
+    }
+}
+async function downloadFile(fileUrl, downloadPath) {
+    try {
+        const response = await axios({
+            method: 'get',
+            url: fileUrl,
+            responseType: 'stream' // 指定响应类型为流
+        });
+
+        // 创建可写流，用于保存下载的文件
+        const fileStream = fs.createWriteStream(downloadPath);
+
+        // 监听 'data' 事件，将数据写入文件流
+        response.data.pipe(fileStream);
+
+        // 返回 Promise，在文件下载完成时 resolve
+        return new Promise((resolve, reject) => {
+            fileStream.on('finish', function() {
+                console.log('更新成功！✅，请重新运行脚本');
+                process.exit();
+                resolve();
+            });
+
+            // 监听 'error' 事件，处理错误
+            fileStream.on('error', function(err) {
+                console.error('更新失败❌，请手动更新:', error);
+                console.error('写入文件时发生错误:', err);
+                reject(err);
+            });
+        });
+    } catch (error) {
+        console.error('下载文件时发生错误:', error);
+        throw error;
+    }
+}
+
 
 // ============================================签名加密============================================ \\
 var i,
