@@ -15,7 +15,7 @@ let local_version = "2024.05.13";
 //=======================================//
 const APP_NAME = '网易生活研究社小程序'
 const ENV_NAME = 'WYSHYJS'
-const $ = new Env(APP_NAME);
+const $ = new Env('网易生活研究社小程序');
 const notify = $.isNode() ? require('./sendNotify') : '';
 const Notify = 1 		//0为关闭通知,1为打开通知,默认为1
 // const JSEncrypt = require('node-jsencrypt');
@@ -777,7 +777,6 @@ async function Envs() {
 async function SendMsg(message) {
     if (!message)
         return;
-
     if (Notify > 0) {
         if ($.isNode()) {
             var notify = require('./sendNotify');
