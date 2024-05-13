@@ -81,18 +81,11 @@ console.log(`✨✨✨ ${APP_NAME} ✨✨✨
             if (APP_CONFIG['NEW_VERSION'] != local_version) {
                 Log(`\n 当前版本：${local_version}`)
                 Log(`\n 最新版本：${APP_CONFIG['NEW_VERSION']}`)
-                if (SCRIPT_UPDATE==True){
+                if (SCRIPT_UPDATE==true){
                     console.log('开始更新脚本')
                     const fileUrl = `https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/${ENV_NAME}.js`;
                     const downloadPath = `./${ENV_NAME}.js`;
                     downloadFile(fileUrl, downloadPath)
-                    .then(() => {
-                        console.log('更新成功！✅，请重新运行脚本');
-                        process.exit();
-                    })
-                    .catch((error) => {
-                        console.error('更新失败❌，请手动更新:', error);
-                    });
                 }
 
             } else {
@@ -149,12 +142,14 @@ async function downloadFile(fileUrl, downloadPath) {
         // 返回 Promise，在文件下载完成时 resolve
         return new Promise((resolve, reject) => {
             fileStream.on('finish', function() {
-                console.log('文件下载完成。');
+                console.log('更新成功！✅，请重新运行脚本');
+                process.exit();
                 resolve();
             });
 
             // 监听 'error' 事件，处理错误
             fileStream.on('error', function(err) {
+                console.error('更新失败❌，请手动更新:', error);
                 console.error('写入文件时发生错误:', err);
                 reject(err);
             });
