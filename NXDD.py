@@ -18,8 +18,11 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 # 禁用安全请求警告
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
+IS_DEV = False
 if os.path.isfile('DEV_ENV.py'):
     import DEV_ENV
+    IS_DEV = True
 if os.path.isfile('notify.py'):
     from notify import send
     print("加载通知服务成功！")
@@ -308,16 +311,19 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
 ✨✨✨ @Author CHERWIN✨✨✨
 ''')
     local_script_name = os.path.basename(__file__)
-    local_version = '2024.04.06'
-    if os.path.isfile('CHERWIN_TOOLS.py'):
+    local_version = '2024.05.15'
+    if IS_DEV:
         import_Tools()
     else:
-        if down_file('CHERWIN_TOOLS.py', 'https://py.cherwin.cn/CHERWIN_TOOLS.py'):
-            print('脚本依赖下载完成请重新运行脚本')
+        if os.path.isfile('CHERWIN_TOOLS.py'):
             import_Tools()
         else:
-            print('脚本依赖下载失败，请到https://py.cherwin.cn/CHERWIN_TOOLS.py下载最新版本依赖')
-            exit()
+            if down_file('CHERWIN_TOOLS.py', 'https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/CHERWIN_TOOLS.py'):
+                print('脚本依赖下载完成请重新运行脚本')
+                import_Tools()
+            else:
+                print('脚本依赖下载失败，请到https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/CHERWIN_TOOLS.py下载最新版本依赖')
+                exit()
     print(TIPS)
     token = ''
     token = ENV if ENV else token

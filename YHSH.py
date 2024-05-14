@@ -21,8 +21,10 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 # 禁用安全请求警告
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+IS_DEV = False
 if os.path.isfile('DEV_ENV.py'):
     import DEV_ENV
+    IS_DEV = True
 if os.path.isfile('notify.py'):
     from notify import send
     print("加载通知服务成功！")
@@ -946,6 +948,58 @@ class RUN:
             # print(response)
         else:
             print(f'>申请失败，{response}')
+
+
+    def sixYears_getTask(self):
+        print(f'>>开始获取6周年任务列表')
+        headers = {
+            'Accept': '*/*'
+        }
+
+        url = f'https://api.yonghuivip.com/web/marketing/quick/task/loadTask?activityId=3572&{self.url_add}'
+        response = self.do_request(url, headers=headers, req_type='get')
+
+        if 'code' in response and response.get('code') == 0:
+            data = response.get('data',[{}])
+            for task in data:
+                taskId = task.get('taskId','')
+                taskType = task.get('taskType','')
+                taskStatus = task.get('taskStatus','')
+                taskTitle = task.get('taskTitle','')
+                if taskStatus == 0:
+                    print(f'任务[{taskTitle}]已完成')
+                    continue
+                self.sixYears_doTask(taskId,taskType,taskTitle)
+        else:
+            Log(f'获取6周年任务列表，{response}')
+
+    def sixYears_doTask(self,taskId,taskType,taskTitle):
+        print(f'>>开始执行{taskTitle}任务')
+        headers= self.headers.copy()
+
+        headers_new = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+        headers.update(headers_new)
+
+        data = {
+            "activityId": '3572',
+            "activityCode": "FJ-MD-05",
+            "taskId": taskId,
+            "taskType": taskType
+        }
+
+        url = f'https://api.yonghuivip.com/web/marketing/quick/task/doTask?{self.url_add}'
+        response = self.do_request(url, headers=headers,data=data)
+
+        if 'code' in response and response.get('code') == 0:
+            data = response.get('data',{})
+            count = data.get('count',0)
+            print(f'获得【{count}】次抽奖机会')
+        else:
+            Log(f'>执行{taskTitle}任务失败，{response}')
+
     def help_fun(self):
         print(f"\n>>>>>>>>>>开始互助<<<<<<<<<<")
         one_msg = ''
@@ -982,6 +1036,7 @@ class RUN:
             self.Boostcoupon()
         else:
             self.Boostcoupon(GameCode)
+        self.sixYears_getTask()
         new_data = {
             self.memberId:
                 {
@@ -1074,16 +1129,20 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
 ✨✨✨ @Author CHERWIN✨✨✨
         ''')
     local_script_name = os.path.basename(__file__)
-    local_version = '2024.04.17'
-    if os.path.isfile('CHERWIN_TOOLS.py'):
+    local_version = '2024.05.15'
+    if IS_DEV:
         import_Tools()
     else:
-        if down_file('CHERWIN_TOOLS.py', 'https://py.cherwin.cn/CHERWIN_TOOLS.py'):
-            print('脚本依赖下载完成请重新运行脚本')
+        if os.path.isfile('CHERWIN_TOOLS.py'):
             import_Tools()
         else:
-            print('脚本依赖下载失败，请到https://py.cherwin.cn/CHERWIN_TOOLS.py下载最新版本依赖')
-            exit()
+            if down_file('CHERWIN_TOOLS.py', 'https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/CHERWIN_TOOLS.py'):
+                print('脚本依赖下载完成请重新运行脚本')
+                import_Tools()
+            else:
+                print(
+                    '脚本依赖下载失败，请到https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/CHERWIN_TOOLS.py下载最新版本依赖')
+                exit()
     print(TIPS)
     token = ''
     token = ENV if ENV else token
@@ -1097,8 +1156,8 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
         for index, infos in enumerate(tokens):
             run_result = RUN(infos, index).main()
             if not run_result:continue
-        for index, infos in enumerate(tokens):
-            RUN(infos, index).help_fun()
-            if not run_result: continue
+        # for index, infos in enumerate(tokens):
+        #     RUN(infos, index).help_fun()
+        #     if not run_result: continue
         if send: send(f'{APP_NAME}挂机通知', send_msg + TIPS_HTML)
 

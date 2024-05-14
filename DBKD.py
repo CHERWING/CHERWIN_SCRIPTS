@@ -3,8 +3,8 @@
 # -------------------------------
 # ✨✨✨ @Author CHERWIN✨✨✨
 # -------------------------------
-# cron "0 7 * * *" script-path=xxx.py,tag=匹配cron用
-# const $ = new Env('德邦快递小程序签到')
+# cron "0 6 * * *" script-path=xxx.py,tag=匹配cron用
+# const $ = new Env('中通快递小程序签到')
 
 import os
 import requests
@@ -13,9 +13,10 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 # 禁用安全请求警告
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
-
+IS_DEV = False
 if os.path.isfile('DEV_ENV.py'):
     import DEV_ENV
+    IS_DEV = True
 if os.path.isfile('notify.py'):
     from notify import send
     print("加载通知服务成功！")
@@ -46,14 +47,12 @@ class RUN:
         self.index = index + 1
         self.s = requests.session()
         self.s.verify = False
-
-        self.token = token
+        self.token = f'ECO_TOKEN={token};'
         self.headers = {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 MicroMessenger/7.0.20.1781(0x6700143B) NetType/WIFI MiniProgramEnv/Windows WindowsWechat/WMPF WindowsWechat(0x6309080f) XWEB/9079',
+                'Cookie':self.token,
                 'Referer': 'https://servicewechat.com/wxa1ebeeb0ed47f0b2/633/page-frame.html'
             }
-        self.baseUrl = 'https://api.ztomember.com/api/'
-
 
     def do_request(self, method, url, params=None, data=None, headers=None):
         if not headers:
@@ -86,6 +85,26 @@ class RUN:
             print(f"查询账户异常: {e}")
             return False
 
+    def queryUserInfo(self):
+        try:
+            self.headers['Content-Type'] = 'application/json'
+            self.headers['Accept'] = '*/*'
+            response = self.do_request('GET', 'https://www.deppon.com/ndcc-gwapi/userService/eco/user/secure/queryUserInfo')
+            if response and response.get('message') == 'ok':
+                # print(response)
+                result = response.get('result', {})
+                phone = result.get('mobile', '')
+                self.mobile = phone[:3] + "*" * 4 + phone[7:]
+                self.userName = result.get('userName', '')
+                Log(f'\n用户名：【{self.userName}】\n手机号：【{self.mobile}】')
+                return True
+            else:
+                Log(f"登录验证失败: {response}")
+                return False
+        except Exception as e:
+            print(f"登录验证异常: {e}")
+            return False
+
     def generate_tmp_token(self):
         try:
             response = self.do_request('GET',              'https://www.deppon.com/ndcc-gwapi/userService/eco/user/token/secure/generateTmpToken')
@@ -107,11 +126,11 @@ class RUN:
             if response and response.get('code') == 200:
                 # print(response)
                 Log(f"登录验证成功！")
-                self.phone = response['data']['mobile']
-                self.token = response['data']['token']
-                self.headers['mobile'] = self.phone
+                data = response.get('data', {})
+                self.token = data.get('token','')
+                self.phone = data.get('mobile','')
                 self.headers['token'] = self.token
-                #
+                self.headers['mobile'] = self.phone
                 # print(f"PHONE：【{self.phone}】")
                 # print(f"TOKEN：【{self.token}】")
                 return True
@@ -248,7 +267,7 @@ class RUN:
                 "rightsClaimStatus":1,
                 "taskRuleId":self.taskRuleId
                    }
-            response = self.do_request('POST', 'https://mas.deppon.com/crm-api/deppon/pay/member/add/package/query',data = data)
+            response = self.do_request('POST', 'https://mas.deppon.com/crm-api/deppon/points/task/changeStatus',data = data)
             if response and response.get('code') == 200:
                 Log(f'完成任务：【{self.name}】成功！')
                 return response['msg']
@@ -276,14 +295,15 @@ class RUN:
 
     def lottery(self):
         try:
-            data = {"phone": self.phone,"gameId":'Zv8i7IsOPZIQrvvupKXE1w=='}
-            response = self.do_request('POST', 'https://mas.deppon.com/crm-api/game/draw/lottery',data = data)
+            data = {"mobile": self.phone,"gameId":'67'}
+            response = self.do_request('POST', 'https://mas.deppon.com/admin/envelops/game/lottery',data = data)
 
-            if response and response.get('code') == 200:
-                print('抽奖成功')
-                print(response)
-                self.pointsAvailableValue -= 1
-                return response['msg']
+            if response and response.get('code') == 0:
+                # print(response)
+                data = response.get('data','')
+                name = data.get('name','')
+                Log(f'抽奖成功,获得：{name}')
+                return
             else:
                 print(f"抽奖失败: {response}")
                 return None
@@ -318,16 +338,20 @@ class RUN:
 
     def main(self):
         Log(f"\n开始执行第{self.index}个账号--------------->>>>>")
-        if self.login():
+        # if self.login():
+
+        if self.queryUserInfo():
+            self.generate_tmp_token()
             self.getSvipNewestInfo()
             self.signIn_info()
             self.points_signIn_info()
             self.task_list()
-            self.lottery_query2()
+            self.lottery()
             self.getSvipNewestInfo('执行后')
             self.sendMsg()
             return True
         else:
+            self.sendMsg()
             return False
 
     def sendMsg(self):
@@ -374,8 +398,8 @@ def import_Tools():
 if __name__ == '__main__':
     APP_NAME = '德邦快递小程序'
     ENV_NAME = 'DBKD'
-    CK_NAME = 'code'
-    CK_URL = 'https://www.deppon.com/ndcc-gwapi/userService/eco/user/login'
+    CK_NAME = 'ECO_TOKEN=里面的值;'
+    CK_URL = 'https://www.deppon.com/ndcc-gwapi/userService/eco/user/secure/queryUserInfo'
     print(f'''
 ✨✨✨ {APP_NAME}签到✨✨✨
 ✨ 功能：
@@ -384,7 +408,7 @@ if __name__ == '__main__':
       打开{APP_NAME}
       授权登陆
       打开抓包工具
-      找{CK_URL}请求body里面的[{CK_NAME}]
+      找{CK_URL}请求Cookies里面的[{CK_NAME}]
       复制里面的[{CK_NAME}]参数值
 参数示例：0f1bjLFa1ZdedHxxxxxxxx
 ✨ ✨✨wxpusher一对一推送功能，
@@ -398,16 +422,19 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
 ✨✨✨ @Author CHERWIN✨✨✨
 ''')
     local_script_name = os.path.basename(__file__)
-    local_version = '2024.04.18'
-    if os.path.isfile('CHERWIN_TOOLS.py'):
+    local_version = '2024.05.15'
+    if IS_DEV:
         import_Tools()
     else:
-        if down_file('CHERWIN_TOOLS.py', 'https://py.cherwin.cn/CHERWIN_TOOLS.py'):
-            print('脚本依赖下载完成请重新运行脚本')
+        if os.path.isfile('CHERWIN_TOOLS.py'):
             import_Tools()
         else:
-            print('脚本依赖下载失败，请到https://py.cherwin.cn/CHERWIN_TOOLS.py下载最新版本依赖')
-            exit()
+            if down_file('CHERWIN_TOOLS.py', 'https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/CHERWIN_TOOLS.py'):
+                print('脚本依赖下载完成请重新运行脚本')
+                import_Tools()
+            else:
+                print('脚本依赖下载失败，请到https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/CHERWIN_TOOLS.py下载最新版本依赖')
+                exit()
     print(TIPS)
     token = ''
     token = ENV if ENV else token
@@ -422,4 +449,4 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
         for index, infos in enumerate(tokens):
             run_result = RUN(infos, index).main()
             if not run_result: continue
-        if send: send(f'{APP_NAME}挂机通知', send_msg + TIPS_HTML)
+        # if send: send(f'{APP_NAME}挂机通知', send_msg + TIPS_HTML)

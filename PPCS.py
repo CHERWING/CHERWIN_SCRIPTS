@@ -19,8 +19,11 @@ import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 # 禁用安全请求警告
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
+IS_DEV = False
 if os.path.isfile('DEV_ENV.py'):
     import DEV_ENV
+    IS_DEV = True
 if os.path.isfile('notify.py'):
     from notify import send
     print("加载通知服务成功！")
@@ -75,6 +78,15 @@ class RUN:
         self.zip = None
         self.lng = None
         self.lat = None
+        self.boost_id = ''
+        self.boost_id_li = []
+        self.boost_name = ''
+        self.boost_type = ''
+        self.boost_is_enabled = ''
+        self.boost_is_finished = ''
+        self.boost_entity_id = ''
+        self.need_newuser = False
+        self.status = False
         self.params = {
             'supplement_id': '',
             'lat_y': '',
@@ -117,11 +129,11 @@ class RUN:
         print('>>>>>>开始随机选择位置')
         url = 'https://j1.pupuapi.com/client/store/place/near_location_by_city/v2'
         # 生成随机的四位数
-        random_digits = ''.join(random.choices('0123456789', k=4))
+        random_digits = ''.join(random.choices('0123456789', k=13))
         # 准备查询参数
         search_params = {
-            'lng': '119.31' + random_digits,
-            'lat': '26.06' + random_digits
+            'lng': '119.30' + random_digits,
+            'lat': '26.08' + random_digits
         }
         try:
             result =self.make_request(url,method='get',params=search_params)
@@ -169,13 +181,14 @@ class RUN:
             response.raise_for_status()
 
             json_response = response.json()
-            print(json_response)
+            # print(json_response)
             data = json_response.get('data', {})
             access_token = data.get('access_token', '')
             if access_token:
                 self.access_token = f'Bearer '+access_token
                 self.user_id = data.get('user_id')
                 self.name = data.get('nick_name', '')
+                self.is_new_user = data.get('is_new_user', '')
                 self.headers['Authorization'] = self.access_token
                 self.headers['pp-userid'] = self.user_id
                 append_data = {
@@ -183,6 +196,7 @@ class RUN:
                     'user_id':self.user_id
                 }
                 access_token_li.append(append_data)
+                self.status = True
                 # print(f'账号【{self.index}】access_token：{self.access_token}')
                 return True
             else:
@@ -382,18 +396,20 @@ class RUN:
                 print(f'查询组队信息失败[{errcode}]: {errmsg}')
         except Exception as e:
             print(str(e))
+
     # 组队
     def joinAuthorTeam(self):
-        Log(f'>>>>>>第1个账号开始助力作者')
+        print(f'>>>>>>第1个账号开始助力作者')
         if len(AuthorCode) > 0:
             for code in AuthorCode:
                 # print(code['teamId'])
-                url = f"https://j1.pupuapi.com/client/game/coin_share/teams/{code['teamId']}/join"
-                response = self.make_request(url)
-                # print(response)
-                if 'errcode' in response and response.get('errcode', '') == 0:
-                    print(f'>入队成功:【{code}】')
-                    break
+                if code.get('status',False) and code.get('phone','') != self.phone:
+                    url = f"https://j1.pupuapi.com/client/game/coin_share/teams/{code['teamId']}/join"
+                    response = self.make_request(url)
+                    # print(response)
+                    if 'errcode' in response and response.get('errcode', '') == 0:
+                        print(f'>入队成功:【{code}】')
+                        break
                 # elif 'errcode' in response and response.get('errcode', '') != 0:
                 #     print(f'>入队失败:【{response.get("errmsg", "")}】')
                 # else:
@@ -420,6 +436,100 @@ class RUN:
                 Log(f'>入队失败')
                 print(response)
 
+    def boost_recommend(self):
+        print(f'>>>>>>开始获取助力活动列表')
+        url = f'https://j1.pupuapi.com/client/boost/recommend'
+        try:
+            result = self.make_request(url,method='get')
+            errcode = result.get('errcode', -1)
+            if errcode == 0:
+                data = result.get('data',[])
+                for li in data:
+                    self.boost_id = li.get('id','')
+                    self.boost_name = li.get('name','')
+                    self.boost_type = li.get('type','')
+                    self.boost_is_enabled = li.get('is_enabled','')
+                    self.boost_is_finished = li.get('is_finished','')
+                    self.boost_entity_id = li.get('entity_id','')
+                    self.boost_finish_condition_msg = li.get('boost_finish_condition_msg','')
+
+
+                    if self.boost_entity_id:
+                        print(f'当前项目：【{self.boost_name}】 已发起 ID：【{self.boost_entity_id}】 完成状态：{self.boost_is_finished} ')
+                        li = {
+                            'boost_entity_id': self.boost_entity_id,
+                            'boost_type': self.boost_type,
+                            'need_newuser':self.need_newuser
+                        }
+                        self.boost_id_li.append(li)
+                        continue
+                    print(f'当前项目：【{self.boost_name}】 完成状态：{self.boost_is_finished} ')
+                    if '新人' in self.boost_finish_condition_msg:
+                        self.need_newuser = True
+                        continue
+                    if not self.boost_take_in():break
+                print(self.boost_id_li)
+
+            else:
+                errmsg = result.get('errmsg', '')
+                print(f'查询组队信息失败[{errcode}]: {errmsg}')
+        except Exception as e:
+            print(str(e))
+
+    def boost_help(self):
+        print(f'>开始助力')
+        if len(AuthorCode) > 0:
+            for code in AuthorCode:
+                # print(code['teamId'])
+                if code.get('status',False) and code.get('phone','') != self.phone and code.get('boost',False) and self.is_new_user:
+                    boost_li = code.get('boost',[])
+                    for boost in boost_li:
+                        boost_entity_id = boost.get('boost_entity_id','')
+                        boost_type = boost.get('boost_type', '')
+                        url = f'https://j1.pupuapi.com/client/boost/assist/{boost_entity_id}?group_type={boost_type}'
+                        # try:
+                        result = self.make_request(url)
+                        errcode = result.get('errcode', -1)
+                        if errcode == 0:
+                            print('助力成功')
+                            self.is_new_user = False
+                            break
+                        else:
+                            errmsg = result.get('errmsg', '')
+                            print(f'助力失败[{errcode}]: {errmsg}')
+                            break
+                else:
+                    continue
+        # except Exception as e:
+        #     print(str(e))
+
+    def boost_take_in(self):
+        print(f'>开始发起助力活动')
+        self.lng = str(self.location['lng_x'])
+        self.lat = str(self.location['lat_y'])
+        url = f'https://j1.pupuapi.com/client/boost/take_in/{self.boost_id}?lat_y={self.lat}&lng_x={self.lng}'
+        # try:
+        result = self.make_request(url)
+        errcode = result.get('errcode', -1)
+        if errcode == 0:
+            self.boost_entity_id = result.get('data','')
+            # print(self.boost_entity_id)
+            if self.boost_entity_id:
+                li = {
+                        'boost_entity_id':self.boost_entity_id,
+                        'boost_type':self.boost_type,
+                        'need_newuser':self.need_newuser
+                    }
+                self.boost_id_li.append(li)
+                return True
+        else:
+            errmsg = result.get('errmsg', '')
+            print(f'发起组队失败[{errcode}]: {errmsg}')
+            return False
+        # except Exception as e:
+        #     print(str(e))
+
+
     def main(self):
         # print(self.refresh_token)
         if self.get_AccessToken():
@@ -428,35 +538,42 @@ class RUN:
             self.signStu()
             self.getCoinInfo()
             self.get_myTeam()
+            self.boost_recommend()
+            if self.is_new_user:
+                self.boost_help()
             new_data = {
                 self.user_id:
                     {
+                        'status': self.status,
                         'phone': self.phone,
-                        'invite_code': self.invite_code
+                        'invite_code': self.invite_code,
+                        'boost':self.boost_id_li
                     }
             }
             if self.teamId:new_data[self.user_id]['teamId']=self.teamId
             CHERWIN_TOOLS.SAVE_INVITE_CODE("INVITE_CODE/PPCS_INVITE_CODE.json", new_data)
+            self.sendMsg()
             return True
         else:
             Log( f'账号[{self.index}] {CK_NAME}:\n【{self.refresh_token}】\n已失效请及时更新')
+            self.sendMsg()
             return False
-        self.sendMsg()
+
 
     def help(self):
         if self.get_AccessToken():
-
             if self.index == 1:
-                Log('--------签到组队--------')
+                print('--------签到组队--------')
                 self.joinAuthorTeam()
             else:
-                Log('--------签到组队--------')
+                print('--------签到组队--------')
                 self.joinTeam()
             return True
         else:
             Log(f'账号[{self.index}] {CK_NAME}:\n【{self.refresh_token}】\n已失效请及时更新')
+            self.sendMsg(True)
             return False
-        self.sendMsg(True)
+
 
     def sendMsg(self, help=False):
         if self.send_UID:
@@ -493,7 +610,7 @@ def down_file(filename, file_url):
 def import_Tools():
     global CHERWIN_TOOLS,ENV, APP_INFO, TIPS, TIPS_HTML, AuthorCode
     import CHERWIN_TOOLS
-    ENV, APP_INFO, TIPS, TIPS_HTML, AuthorCode = CHERWIN_TOOLS.main(APP_NAME, local_script_name, ENV_NAME,local_version)
+    ENV, APP_INFO, TIPS, TIPS_HTML, AuthorCode = CHERWIN_TOOLS.main(APP_NAME, local_script_name, ENV_NAME,local_version,True)
 
 if __name__ == '__main__':
     APP_NAME = '朴朴超市'
@@ -521,16 +638,19 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
         ''')
 
     local_script_name = os.path.basename(__file__)
-    local_version = '2024.04.06'
-    if os.path.isfile('CHERWIN_TOOLS.py'):
+    local_version = '2024.05.15'
+    if IS_DEV:
         import_Tools()
     else:
-        if down_file('CHERWIN_TOOLS.py', 'https://py.cherwin.cn/CHERWIN_TOOLS.py'):
-            print('脚本依赖下载完成请重新运行脚本')
+        if os.path.isfile('CHERWIN_TOOLS.py'):
             import_Tools()
         else:
-            print('脚本依赖下载失败，请到https://py.cherwin.cn/CHERWIN_TOOLS.py下载最新版本依赖')
-            exit()
+            if down_file('CHERWIN_TOOLS.py', 'https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/CHERWIN_TOOLS.py'):
+                print('脚本依赖下载完成请重新运行脚本')
+                import_Tools()
+            else:
+                print('脚本依赖下载失败，请到https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/CHERWIN_TOOLS.py下载最新版本依赖')
+                exit()
     print(TIPS)
     token = ''
     token = ENV if ENV else token
@@ -538,6 +658,12 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
         print(f"未填写{ENV_NAME}变量\n青龙可在环境变量设置 {ENV_NAME} 或者在本脚本文件上方将{CK_NAME}填入token =''")
         exit()
     tokens = CHERWIN_TOOLS.ENV_SPLIT(token)
+    # with open('INVITE_CODE/PPCS_INVITE_CODE.json','r') as f:
+    #     content = json.loads(f.read())
+    #     print(content)
+
+    # AuthorCode = list(content.values())
+    # print(AuthorCode)
     # print(tokens)
     if len(tokens) > 0:
         print(f"\n>>>>>>>>>>共获取到{len(tokens)}个账号<<<<<<<<<<")

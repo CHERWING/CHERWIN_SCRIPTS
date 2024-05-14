@@ -1,32 +1,37 @@
+import hashlib
 import json
 import os
 import importlib.util
+import random
+import string
 import subprocess
 import sys
+import time
 import requests
 from http import HTTPStatus
+from datetime import datetime
 
-NOW_TOOLS_VERSION = '2024.05.04'
+NOW_TOOLS_VERSION = '2024.05.15'
 if os.path.isfile('DEV_ENV.py'):
     import DEV_ENV
+    IS_DEV = True
+else:
+    IS_DEV = False
 
 
 # 尝试导入包
 def import_or_install(package_name, import_name=None):
     # 如果传入了 import_name，则使用它来检查模块，否则默认与包名相同
     import_name = import_name or package_name
-
     try:
         # 检查模块是否已安装
         package_spec = importlib.util.find_spec(import_name)
-
         if package_spec is None:
             print(f"{package_name} 模块未安装. 开始安装...")
             subprocess.check_call([sys.executable, '-m', 'pip', 'install', package_name])
             print(f"{package_name} 模块安装完成。")
         else:
             print(f"{package_name} 模块已安装。")
-
         # 尝试导入模块检查是否安装成功
         __import__(import_name)
         module = importlib.import_module(import_name)
@@ -51,7 +56,6 @@ def SAVE_INVITE_CODE(file_name, new_data):
         if not os.path.exists(directory):
             os.makedirs(directory)
         data = {}
-
     # 检查是否已存在相同的键，如果存在，合并数据
     for key, value in new_data.items():
         if key in data:
@@ -60,7 +64,6 @@ def SAVE_INVITE_CODE(file_name, new_data):
         else:
             # 如果键不存在，直接插入新数据
             data[key] = value
-
     # 将更新后的数据写入JSON文件
     with open(file_name, 'w', encoding='utf-8') as file:
         json.dump(data, file, indent=4)
@@ -79,73 +82,19 @@ def create_dict_from_string(self, data_string):
 def compare_versions(local_version, server_version):
     local_parts = local_version.split('.')  # 将本地版本号拆分成数字部分
     server_parts = server_version.split('.')  # 将服务器版本号拆分成数字部分
-
     for l, s in zip(local_parts, server_parts):
         if int(l) < int(s):
-            return True  # 当前版本低于服务器版本
+            return True
+            # 当前版本低于服务器版本
         elif int(l) > int(s):
-            return False  # 当前版本高于服务器版本
-
+            return False
+            # 当前版本高于服务器版本
     # 如果上述循环没有返回结果，则表示当前版本与服务器版本的数字部分完全相同
     if len(local_parts) < len(server_parts):
         return True  # 当前版本位数较短，即版本号形如 x.y 比 x.y.z 低
     else:
         return False  # 当前版本与服务器版本相同或更高
 
-
-def CHECK_UPDATE(local_version, server_version_url, server_script_url, script_filename):
-    """
-    检查版本并更新
-
-    Args:
-        local_version (str): 本地版本号
-        server_version_url (str): 服务器版本文件地址
-        server_script_url (str): 服务器脚本地址
-        script_filename (str): 要保存的脚本文件名
-
-    Returns:
-        bool: 是否进行了更新操作
-    """
-    try:
-        # 获取服务器版本号
-        response = requests.get(server_version_url, verify=False)
-        response.raise_for_status()  # Raises an HTTPError for bad responses
-        # print(response.text)
-        server_version = response.text.strip()  # 去除首尾空格
-        print(f'当前版本：【{local_version}】')
-        print(f'服务器版本：【{server_version}】')
-
-        if compare_versions(local_version, server_version):
-            # 需要更新，下载服务器脚本
-            AUTO_UPDATE = os.getenv("SCRIPT_UPDATE", "True").lower() != "false"
-            # print(AUTO_UPDATE)
-            if AUTO_UPDATE:
-                print(">>>>>>>发现新版本的脚本，默认自动更新，准备更新...")
-                print(">>>>>>>禁用更新请定义变量export SCRIPT_UPDATE = 'False'")
-                response_script = requests.get(server_script_url, verify=False, timeout=10)
-                response_script.raise_for_status()
-
-                with open(script_filename, 'wb') as f:
-                    f.write(response_script.content)
-                print(f'{script_filename} 下载完成！')
-                print(f'尝试运行新脚本')
-                import subprocess, sys
-                # 使用 sys.executable 获取 Python 可执行文件的完整路径
-                python_executable = sys.executable
-                subprocess.Popen([python_executable, script_filename])
-
-            else:
-                print(">>>>>>>发现新版本的脚本，您禁用了自动更新，如需启用请删除变量SCRIPT_UPDATE")
-        else:
-            print(f'当前版本高于或等于服务器版本')
-
-    except requests.exceptions.RequestException as e:
-        print(f'发生网络错误：{e}')
-
-    except Exception as e:
-        print(f'发生未知错误：{e}')
-
-    return False  # 返回 False 表示没有进行更新操作
 
 
 def CHECK_UPDATE_NEW(local_version, server_version, server_script_url, script_filename, server_version_url=None,
@@ -176,7 +125,6 @@ def CHECK_UPDATE_NEW(local_version, server_version, server_script_url, script_fi
         if not server_version: server_version = NOW_TOOLS_VERSION
         print(f'本地版本：【{local_version}】')
         print(f'服务器版本：【{server_version}】')
-
         if compare_versions(local_version, server_version):
             # 需要更新，下载服务器脚本
             AUTO_UPDATE = os.getenv("SCRIPT_UPDATE", "True").lower() != "false"
@@ -192,16 +140,13 @@ def CHECK_UPDATE_NEW(local_version, server_version, server_script_url, script_fi
         else:
             print(f'无需更新\n')
             return False
-
     except requests.exceptions.RequestException as e:
         print(f'发生网络错误：{e}')
         server_base_url = f"https://py.cherwin.cn/{APP_NAME}/"
         server_script_url = f"{server_base_url}{script_filename}"
         CHECK_UPDATE_NEW(local_version, server_version, server_script_url, script_filename, APP_NAME=APP_NAME)
-
     except Exception as e:
         print(f'发生未知错误：{e}')
-
     return False  # 返回 False 表示没有进行更新操作
 
 
@@ -213,7 +158,6 @@ def down_file(filename, file_url):
         with open(filename + '.tmp', 'wb') as f:
             f.write(response.content)
         print(f'【{filename}】下载完成！')
-
         # 检查临时文件是否存在
         temp_filename = filename + '.tmp'
         if os.path.exists(temp_filename):
@@ -244,40 +188,10 @@ def get_AuthorInviteCode(url):
         else:
             # print("无法获取文件。状态代码:", response.status_code)
             return {}
-
     except Exception as e:
         print(f"An error occurred: {e}")
         return {}
 
-
-def GET_TIPS(server_base_url):
-    url = f'{server_base_url}tips.txt'
-    try:
-        response = requests.get(url, verify=False)
-        # 检查响应的编码
-        encoding = response.encoding
-        # print(f"编码: {encoding}")
-        # 设置正确的编码（根据实际情况可能需要调整）
-        response.encoding = 'utf-8'
-        # 读取内容
-        content = response.text
-        if 'code' in content:
-            content = None
-    except:
-        content = None
-        print('获取通知内容失败')
-    if content:
-        return (f'''
-***********通知内容************\n
-{content}
-***********通知内容************\n
-''')
-    else:
-        return (f'''
-***********通知内容************\n
-        @Author Cherwin
-***********通知内容************\n
-''')
 
 
 def CHECK_PARAMENTERS(index, input_string, required_parameters):
@@ -285,16 +199,13 @@ def CHECK_PARAMENTERS(index, input_string, required_parameters):
 
     # 记录缺少的参数
     missing_parameters = []
-
     # 将输入字符串和参数列表中的所有字符都转换为小写
     input_string_lower = input_string.lower()
     required_parameters_lower = [param.lower() for param in required_parameters]
-
     # 判断字符串中是否包含所有必需的参数
     for param in required_parameters_lower:
         if param not in input_string_lower:
             missing_parameters.append(param)
-
     if missing_parameters:
         print(f"\n第【{index + 1}】个账号，缺少以下参数:【{missing_parameters}】")
         return False
@@ -378,30 +289,6 @@ def CAPCODE(captcha_slider, captcha_bg):
         return False
 
 
-def BASE64_TO_IMG(base64_string, output_path):
-    import base64
-    import io
-    Image = import_or_install('Pillow', 'PIL.Image')
-
-    if Image:
-        try:
-            # 解码base64字符串
-            image_data = base64.b64decode(base64_string)
-            # 将字节数据转换为字节流
-            image_buf = Image.open(io.BytesIO(image_data))
-            # 转换为RGB模式
-            image_buf = image_buf.convert('RGB')
-            # 保存图片到指定路径
-            image_buf.save(output_path, format='JPEG')
-            return True
-        except Exception as e:
-            print(f'发生错误：{e}')
-            return False
-    else:
-        print('需要的模块[PIL]无法导入，函数无法执行。')
-        return False
-
-
 def send_wxpusher(UID, one_msg, APP_NAME, help=False):
     WXPUSHER = os.environ.get('WXPUSHER', False)
     if WXPUSHER:
@@ -421,17 +308,16 @@ def wxpusher(UID, msg, title, help=False):
         print(f'标题：【{title}】\n内容：{msg}')
         webapi = 'http://wxpusher.zjiecode.com/api/send/message'
         msg = msg.replace("\n", "<br>")
-        tips = TIPS_HTML.replace("\n", "<br>")
+        # tips = TIPS_HTML.replace("\n", "<br>")
         data = {
             "appToken": WXPUSHER,
-            "content": f'{title}<br>{msg}<br>{tips}',
+            "content": f'{title}<br>{msg}<br>{TIPS_HTML}',
             # "summary": msg[:99],  # 该参数可选，默认为 msg 的前10个字符
             "summary": title,
             "contentType": 2,
             "uids": [UID],
             "url": "https://gj.cherwin.cn"
         }
-
         try:
             result = requests.post(url=webapi, json=data)
             result.raise_for_status()  # 对于非2xx状态码，抛出异常
@@ -474,9 +360,71 @@ def CHECK():
     except:
         print('获取CHERWIN_SCRIPT_CONFIG.json失败')
         return False
+def GJJJ_SIGN():
+    app_id = "667516"
+    app_crypto = "FH3yRrHG2RfexND8"
+    timestamp = int(time.time() * 1000)
+    # timestamp = 1715180892075
+    text = f"{app_id}{app_crypto}{timestamp}"
+    sign = hashlib.md5(text.encode()).hexdigest()
+    new_data = {
+        'timestamp': str(timestamp),
+        "sign": sign
+    }
+    return new_data
+def KWW_SIGN(memberId):
+    timestamp = int(time.time() * 1000)
+    random_num = random.randint(0, 31)
+    u = [
+        "A", "Z", "B", "Y", "C", "X", "D", "T", "E", "S", "F", "R", "G", "Q", "H", "P", "I", "O", "J", "N", "k",
+        "M", "L", "a", "c", "d", "f", "h", "k", "p", "y", "n"]
+    r = f"{timestamp}{memberId}{u[random_num]}"
+    sign = hashlib.md5(r.encode()).hexdigest()
+    update_headers = {
+        "user-sign": sign,
+        "user-paramname": "memberId",
+        "user-timestamp": str(timestamp),
+        "user-random": str(random_num)
+    }
+    return update_headers
+def TYQH_SIGN(parameters={}, body=None):
+    sorted_keys = sorted(parameters.keys())
+    parameter_strings = []
+    for key in sorted_keys:
+        if isinstance(parameters[key], dict):
+            parameter_strings.append(f"{key}={json.dumps(parameters[key])}")
+        else:
+            parameter_strings.append(f"{key}={parameters[key]}")
 
+    current_time = int(datetime.now().timestamp() * 1000)
+    secret_chars = list('BxzTx45uIGT25TTHIIBU2')
+    last_three_digits = str(current_time)[-3:]
+    for digit in last_three_digits:
+        secret_chars.insert(int(digit), digit)
 
-def main(APP_NAME, local_script_name, ENV_NAME, local_version):
+    secret = hashlib.md5(''.join(secret_chars).encode()).hexdigest()
+    nonce_str = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
+
+    sign_data = {
+        'client_id': 'game',
+        'nonstr': nonce_str,
+        'timestamp': current_time,
+        'body': json.dumps(body) if body else '',
+        'query': '&'.join(parameter_strings) if parameter_strings else '',
+        'secret': secret
+    }
+
+    sign_string = '|'.join([str(v) for v in sign_data.values()])
+    sign = hashlib.md5(sign_string.encode()).hexdigest().upper()
+    sign_header = {
+        'client_id': 'game',
+        'timestamp': str(current_time),
+        'nonstr': sign_data['nonstr'],
+        'sign': sign
+    }
+    return sign_header
+
+def main(APP_NAME, local_script_name, ENV_NAME, local_version,need_invite=False):
     global APP_INFO, TIPS, TIPS_HTML
     git_url = f'https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/{local_script_name}'
     if CHECK():
@@ -486,20 +434,19 @@ def main(APP_NAME, local_script_name, ENV_NAME, local_version):
         if CHECK_UPDATE_NEW(local_version, server_version, git_url, local_script_name, APP_NAME=APP_NAME):
             print('更新成功，请重新运行脚本！')
 
-        if not APP_INFO.get('ENABLE', False):
+        if not APP_INFO.get('ENABLE', False) and not IS_DEV:
             print('当前脚本未开放')
             exit()
         TIPS = APP_INFO.get('NTC', '') if APP_INFO.get('NTC', '') else CHERWIN_SCRIPT_CONFIG.get('GLOBAL_NTC', '')
-
-        TIPS_HTML = APP_INFO.get('NTC', '') if APP_INFO.get('NTC', '') else CHERWIN_SCRIPT_CONFIG.get('GLOBAL_NTC_HTML',
-                                                                                                      '')
+        TIPS_HTML = APP_INFO.get('NTC', '') if APP_INFO.get('NTC', '') else CHERWIN_SCRIPT_CONFIG.get('GLOBAL_NTC_HTML','')
         ENV = os.environ.get(ENV_NAME)
-        AuthorCode = get_AuthorInviteCode(f'https://yhsh.ziyuand.cn/{ENV_NAME}_INVITE_CODE.json')
-
+        if need_invite:
+            AuthorCode = get_AuthorInviteCode(f'https://yhsh.ziyuand.cn/{ENV_NAME}_INVITE_CODE.json')
+        else:
+            AuthorCode = ''
         return ENV, APP_INFO, TIPS, TIPS_HTML, AuthorCode
     else:
         exit()
 
-
 if __name__ == '__main__':
-    pass
+    print(NOW_TOOLS_VERSION)

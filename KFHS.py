@@ -1,21 +1,23 @@
 # !/usr/bin/python3
 # -- coding: utf-8 --
 # -------------------------------
-# cron "30 1 * * *" script-path=xxx.py,tag=匹配cron用
+# cron "0 0,8 * * " script-path=xxx.py,tag=匹配cron用
 # const $ = new Env('微信公众号：卡夫亨氏新厨艺')
 
 import os
 import random
 import time
-from datetime import date, datetime
+from datetime import date, datetime,time as times
 
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
-# import CHERWIN_TOOLS
 # 禁用安全请求警告
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+IS_DEV = False
 if os.path.isfile('DEV_ENV.py'):
     import DEV_ENV
+    IS_DEV = True
+
 if os.path.isfile('notify.py'):
     from notify import send
     print("加载通知服务成功！")
@@ -75,7 +77,7 @@ class RUN:
                 openId = data.get('openId','')
                 signTimes = data.get('signTimes',0)
                 memberInfo = data.get('memberInfo', {})
-                phone = memberInfo.get('phone', '')
+                self.phone = memberInfo.get('phone', '')
                 score = memberInfo.get('score', '')
                 if End :
                     Log(f'执行后积分：【{score}】')
@@ -84,22 +86,23 @@ class RUN:
                 # add = {"nickname":nickname,"member_id":member_id}
                 userid_list.append(self.member_id)
                 username_list.append(nickname)
-                Log(f'>>>当前用户：【{nickname}】\nID：【{self.member_id}】 \nOpenID:【{openId}】 \n已连续签到【{signTimes}】天')
                 serialSign = data.get('serialSign', [{}])
+                signTimes = data.get('signTimes', 0)
+                Log(f'>>>当前用户：【{nickname}】\nID：【{self.member_id}】 \nOpenID:【{openId}】 \n已连续签到【{signTimes}】天')
 
-                if serialSign :
+                if serialSign:
                     current_date = date.today()
                     date_string = serialSign[0].get('createdAt',current_date)
                     memberBalance = serialSign[0].get('memberBalance', 0)
                     parsed_date = datetime.strptime(date_string, '%Y-%m-%d %H:%M:%S').date()
                     if parsed_date == current_date:
                         print(f"今日已签到，当前积分：【{memberBalance}】")
-                    else:
-                        print("今日未签到")
-                        wait_time = random.randint(1000, 10000) / 1000.0  # 转换为秒
-                        time.sleep(wait_time)
-                        print('随机延时1-10秒执行签到')
-                        self.dailySign()
+                else:
+                    print("今日未签到")
+                    wait_time = random.randint(1000, 10000) / 1000.0  # 转换为秒
+                    time.sleep(wait_time)
+                    print('随机延时1-10秒执行签到')
+                    self.dailySign()
                 return True
             except:
                 print(response.text)
@@ -141,7 +144,28 @@ class RUN:
                 id_list = resp['data']['chineseCookbook']['data']
                 for i in id_list:
                     Cookid_list.append(i['id'])
+                    # self.creatCookbookCode(i['id'])
                 print(f'>获取到菜谱ID:【{Cookid_list}】')
+            except:
+                print(response.text)
+        else:
+            print("API访问失败！")
+
+    def creatCookbookCode(self,cookbook_id):
+
+        data = {
+            'cookbook_id':cookbook_id
+        }
+        response = self.s.post(
+            f'{self.baseUrl}createCookbookCode',
+            headers=self.headers, data=data
+        )
+        if response.status_code == 200:
+            try:
+                resp = response.json()
+                data = resp.get('data',{})
+                code_url = data.get('code_url','')
+                print(f'创建分享链接成功：[{code_url}]')
             except:
                 print(response.text)
         else:
@@ -195,19 +219,31 @@ class RUN:
         else:
             Log('助力对象为自身，跳过')
 
-    # 预留兑换函数
-    def exchangeIntegralNew(self):
+    def exchange(self):
         data = {
-            'value': '爱奇艺月卡',
-            'phone': '',
-            'type': '视频卡'
+            'phone': self.phone
         }
-        # data = {
-        #     'value': '全网10元话费',
-        #     'phone': '',
-        #     'type': '话费',
-        #     'memberId': '',
-        # }
+        huafei_li = ['全网10元话费', '全网20元话费']
+        videoCard_li = ['爱奇艺', '腾讯', '优酷']
+        cardType = ['年卡', '季卡', '月卡', '周卡']
+        for card in huafei_li:
+            data['value'] = card
+            data['type'] = '话费'
+            data['memberId'] = self.member_id
+            self.exchangeIntegralNew(data)
+
+        for card in cardType:
+            for video in videoCard_li:
+                cardname = video + card
+                data['value'] = cardname
+                data['type'] = '视频卡'
+                self.exchangeIntegralNew(data)
+                print(cardname)
+
+
+    # 预留兑换函数
+    def exchangeIntegralNew(self,data):
+        print(f'正在尝试兑换【{data["value"]}】')
         response = self.s.post(
             f'{self.baseUrl}exchangeIntegralNew',
             headers=self.headers,
@@ -224,15 +260,18 @@ class RUN:
             print("API访问失败！")
 
     def main(self):
-        # self.getUserInfo()
-        # self.getCookbookIndex()
         if self.getUserInfo():
-            if self.index == 1:
-                self.getCookbookIndex()
+            now = datetime.now().time()
+            start_time = times(23, 59, 59)
+            end_time = times(0, 5)
+            if start_time <= now <= end_time:
+                self.exchange()
+            self.getCookbookIndex()
             self.getUserInfo(True)
             self.sendMsg()
             return True
         else:
+            self.sendMsg()
             return False
 
     def help(self):
@@ -245,6 +284,7 @@ class RUN:
             now_id = userid_list[self.index-1]
             Log(f'\n当前用于助力用户:【{username}】 ID:【{now_id}】')
             self.helpAuthor(662056, cookbook_id, now_id)
+            self.helpAuthor(662086, cookbook_id, now_id)
             self.recordScoreShare(cookbook_id, now_id)
             self.sendMsg(True)
             return True
@@ -316,29 +356,32 @@ if __name__ == '__main__':
 export {ENV_NAME}='{CK_NAME}参数值'多账号#或&分割
 export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
 ✨ ✨ 注意：token有效期7天，7天后重新抓
-✨ 推荐cron：5 8 * * *
+✨ 推荐cron：0 0,8 * * 
 ✨✨✨ @Author CHERWIN✨✨✨
 ''')
     local_script_name = os.path.basename(__file__)
-    local_version = '2024.04.06'
-    if os.path.isfile('CHERWIN_TOOLS.py'):
+    local_version = '2024.05.15'
+    if IS_DEV:
         import_Tools()
     else:
-        if down_file('CHERWIN_TOOLS.py', 'https://py.cherwin.cn/CHERWIN_TOOLS.py'):
-            print('脚本依赖下载完成请重新运行脚本')
+        if os.path.isfile('CHERWIN_TOOLS.py'):
             import_Tools()
         else:
-            print('脚本依赖下载失败，请到https://py.cherwin.cn/CHERWIN_TOOLS.py下载最新版本依赖')
-            exit()
+            if down_file('CHERWIN_TOOLS.py', 'https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/CHERWIN_TOOLS.py'):
+                print('脚本依赖下载完成请重新运行脚本')
+                import_Tools()
+            else:
+                print('脚本依赖下载失败，请到https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/CHERWIN_TOOLS.py下载最新版本依赖')
+                exit()
     print(TIPS)
     token = ''
     token = ENV if ENV else token
-    print(token)
+    # print(token)
     if not token:
         print(f"未填写{ENV_NAME}变量\n青龙可在环境变量设置 {ENV_NAME} 或者在本脚本文件上方将{CK_NAME}填入token =''")
         exit()
     tokens = CHERWIN_TOOLS.ENV_SPLIT(token)
-    print(tokens)
+    # print(tokens)
     Cookid_list = []
     userid_list = []
     username_list = []

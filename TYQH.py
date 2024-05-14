@@ -5,23 +5,21 @@
 # -------------------------------
 # cron "25 10-22/2 * * *" script-path=xxx.py,tag=匹配cron用
 # const $ = new Env('统一快乐星球小程序-茄皇的家')
-import hashlib
+
 import json
 import os
 import random
-import string
 import time
-from datetime import datetime
-from os import environ, path
-
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 # 禁用安全请求警告
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
+IS_DEV = False
 if os.path.isfile('DEV_ENV.py'):
     import DEV_ENV
+    IS_DEV = True
 
 if os.path.isfile('notify.py'):
     from notify import send
@@ -128,40 +126,7 @@ class RUN:
             print("发生了未知错误：", e)
 
     def gen_sign(self, parameters={}, body=None):
-        sorted_keys = sorted(parameters.keys())
-        parameter_strings = []
-        for key in sorted_keys:
-            if isinstance(parameters[key], dict):
-                parameter_strings.append(f"{key}={json.dumps(parameters[key])}")
-            else:
-                parameter_strings.append(f"{key}={parameters[key]}")
-
-        current_time = int(datetime.now().timestamp() * 1000)
-        secret_chars = list('BxzTx45uIGT25TTHIIBU2')
-        last_three_digits = str(current_time)[-3:]
-        for digit in last_three_digits:
-            secret_chars.insert(int(digit), digit)
-
-        secret = hashlib.md5(''.join(secret_chars).encode()).hexdigest()
-        nonce_str = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
-
-        sign_data = {
-            'client_id': 'game',
-            'nonstr': nonce_str,
-            'timestamp': current_time,
-            'body': json.dumps(body) if body else '',
-            'query': '&'.join(parameter_strings) if parameter_strings else '',
-            'secret': secret
-        }
-
-        sign_string = '|'.join([str(v) for v in sign_data.values()])
-        sign = hashlib.md5(sign_string.encode()).hexdigest().upper()
-        sign_header = {
-            'client_id': 'game',
-            'timestamp': str(current_time),
-            'nonstr': sign_data['nonstr'],
-            'sign': sign
-        }
+        sign_header = CHERWIN_TOOLS.TYQH_SIGN(parameters, body)
         self.headers.update(sign_header)
         return self.headers
 
@@ -1212,16 +1177,20 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
                 ''')
 
     local_script_name = os.path.basename(__file__)
-    local_version = '2024.05.04'
-    if os.path.isfile('CHERWIN_TOOLS.py'):
+    local_version = '2024.05.15'
+    if IS_DEV:
         import_Tools()
     else:
-        if down_file('CHERWIN_TOOLS.py', 'https://py.cherwin.cn/CHERWIN_TOOLS.py'):
-            print('脚本依赖下载完成请重新运行脚本')
+        if os.path.isfile('CHERWIN_TOOLS.py'):
             import_Tools()
         else:
-            print('脚本依赖下载失败，请到https://py.cherwin.cn/CHERWIN_TOOLS.py下载最新版本依赖')
-            exit()
+            if down_file('CHERWIN_TOOLS.py', 'https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/CHERWIN_TOOLS.py'):
+                print('脚本依赖下载完成请重新运行脚本')
+                import_Tools()
+            else:
+                print(
+                    '脚本依赖下载失败，请到https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/CHERWIN_TOOLS.py下载最新版本依赖')
+                exit()
     print(TIPS)
     token = ''
     token = ENV if ENV else token

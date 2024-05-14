@@ -15,8 +15,10 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 # 禁用安全请求警告
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 #
-if os.path.isfile('/DEV_ENV.py'):
+IS_DEV = False
+if os.path.isfile('DEV_ENV.py'):
     import DEV_ENV
+    IS_DEV = True
 if os.path.isfile('notify.py'):
     from notify import send
     print("加载通知服务成功！")
@@ -36,8 +38,7 @@ class RUN:
         global one_msg
         one_msg = ''
         split_info = info.split('@')
-
-        self.token = split_info[0]
+        self.token = json.loads(split_info[0])
         # print(self.token)
         len_split_info = len(split_info)
         last_info = split_info[len_split_info - 1]
@@ -69,6 +70,8 @@ class RUN:
         }
         #
         # print(self.headers)
+        for key, value in self.token.items():
+            self.headers[key] = value
         self.baseUrl = 'https://wxa-tp.ezrpro.com/myvip/'
 
 
@@ -120,17 +123,30 @@ class RUN:
     def WxAppOnLoginNew(self):
         Log('>>>>>>登陆')
         url = "https://wxa-tp.ezrpro.com/myvip/Base/User/WxAppOnLoginNew"
+        # data = {
+        #     "code": self.token,
+        #     "CommonIdType": "VipWxUnionId",
+        #     "CommonId": "124948229",
+        #     "ShopId": 0,
+        #     "CommonIdSource": 47,
+        #     "Latitude": 0,
+        #     "Longitude": 0,
+        #     "InviteActObj": "{\"ActId\":50726}",
+        #     "PingId": "peLXqZCQAAD-C3PrZ36DkaE98NoLjuqQ",
+        #     # "PingDate": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        #     "PingDate": '2024-03-19 22:23:01'
+        # }
         data = {
-            "code": self.token,
-            "CommonIdType": "VipId",
-            "CommonId": "124948229",
+            "CommonIdType": "VipWxUnionId",
+            "CommonId": "",
             "ShopId": 0,
-            "CommonIdSource": 98,
+            "CommonIdSource": 47,
             "Latitude": 0,
             "Longitude": 0,
             "InviteActObj": "{\"ActId\":50726}",
-            "PingId": "peLXqZCQAA3W2G4d-pEZ8FRPEjxKdzoQ",
-            "PingDate": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            "code": "0c1QVUFa1bogqH0W87Ga1ZHjjG3QVUFP",
+            "PingId": "peLXqZCQAAD-C3PrZ36DkaE98NoLjuqQ",
+            "PingDate": "2024-03-19 22:23:01"
         }
         response = s.post(url, headers=self.headers,json=data)
         response = response.json()
@@ -187,8 +203,9 @@ class RUN:
 
     def main(self):
         Log(f"\n开始执行第{self.index}个账号--------------->>>>>")
-        if self.WxAppOnLoginNew():
-            self.GetVipCardInfoByVipId()
+        # if self.WxAppOnLoginNew():
+        if self.GetVipCardInfoByVipId():
+            # self.GetVipCardInfoByVipId()
             self.GetSignInDtlInfo()
             self.BonusClassify()
             self.sendMsg()
@@ -261,16 +278,19 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
 ✨✨✨ @Author CHERWIN✨✨✨
 ''')
     local_script_name = os.path.basename(__file__)
-    local_version = '2024.05.08'
-    if os.path.isfile('CHERWIN_TOOLS.py'):
+    local_version = '2024.05.15'
+    if IS_DEV:
         import_Tools()
     else:
-        if down_file('CHERWIN_TOOLS.py', 'https://py.cherwin.cn/CHERWIN_TOOLS.py'):
-            print('脚本依赖下载完成请重新运行脚本')
+        if os.path.isfile('CHERWIN_TOOLS.py'):
             import_Tools()
         else:
-            print('脚本依赖下载失败，请到https://py.cherwin.cn/CHERWIN_TOOLS.py下载最新版本依赖')
-            exit()
+            if down_file('CHERWIN_TOOLS.py', 'https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/CHERWIN_TOOLS.py'):
+                print('脚本依赖下载完成请重新运行脚本')
+                import_Tools()
+            else:
+                print('脚本依赖下载失败，请到https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/CHERWIN_TOOLS.py下载最新版本依赖')
+                exit()
     print(TIPS)
     token = ''
     token = ENV if ENV else token
