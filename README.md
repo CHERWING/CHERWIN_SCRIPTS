@@ -10,7 +10,7 @@
 链接：ql repo https://github.com/CHERWING/CHERWIN_SCRIPTS.git "" "" "CHERWIN_TOOLS.py|notify.py" "" ""
 定时类型：crontab
 定时规则：随便
-文件后缀：py
+文件后缀：py|js
 ```
 ```
 有其他薅羊毛应用或者有新活动可以Issues提交
