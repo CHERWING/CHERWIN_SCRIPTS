@@ -31,6 +31,41 @@
 - 需要定义变量export WXPUSHER=wxpusher的app_token，不设置则不启用wxpusher一对一推送
 - 扫描上方二维码并加入推送群组，然后在提交的变量最后添加@wxpusher的UID。
 
+
+
+## 🔥 顾家家居小程序 GJJJ.py
+- ✔ 支持一对一推送。
+- 🎉 功能：积分签到、社区互动
+- ⚙️ 抓包步骤：
+  -打开网易生活研究社小程序
+  -授权登陆
+  -打开抓包工具
+  -抓https://mc.kukahome.com/club-server/member/automaticLogin
+  -返回值identityValue@openid@unionid
+
+
+## 🔥 EMS邮惠中心小程序 EMS.py
+- ✔ 支持一对一推送。
+- 🎉 功能：积分签到
+- ⚙️ 抓包步骤：
+  -打开网易生活研究社小程序
+  -授权登陆
+  -打开抓包工具
+  -抓https://ump.ems.com.cn/memberCenterApiV2/member/findByOpenIdAppId
+  -请求body里的openId
+
+  
+## 🔥 宽哥之家小程序 KGZJ.py
+- ✔ 支持一对一推送。
+- 🎉 功能：积分签到
+- ⚙️ 抓包步骤：
+  -打开网易生活研究社小程序
+  -授权登陆
+  -打开抓包工具
+  -抓shop.sctobacco.com
+  -请求头里的token
+
+
 ## 🔥 网易生活研究社 WYSHYJS.js
 - ✔ 支持一对一推送。
 - 🎉 功能：积分签到
@@ -59,15 +94,15 @@
 - ✔ 支持一对一推送。
 - 🎉 功能：积分签到
 - ⚙️ 抓包步骤：
-      打开特步会员中心小程序
-      授权登陆
-      打开抓包工具
-      找https://wxa-tp.ezrpro.com/myvip/Base/User/WxAppOnLoginNew请求头里的code
-  参数示例:0a3xDicccccccxxxxxxxx
+  - 打开特步会员中心小程序
+  - 授权登陆
+  - 打开抓包工具
+  - 找https://wxa-tp.ezrpro.com/myvip/Base/User/WxAppOnLoginNew
+  - 响应body里的Fields全部内容
+  参数示例:{"ezr-cop-id":"888","ezr-vuid":"888888","ezr-userid":"aaaaaaa","ezr-sv":"1","ezr-st":"8888","ezr-ss":"bbbbb"}
 - 💬 小程序邀请码
   
   <img width="150" src="https://github.com/CHERWING/CHERWIN_SCRIPTS/assets/160421895/b41fa8a6-f110-47db-931f-d5f0af873a2c">
-
 
 
 ## 🔥 永辉生活 YHSH.py
