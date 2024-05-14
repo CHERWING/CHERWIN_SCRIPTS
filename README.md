@@ -7,7 +7,7 @@
 ```
 名称：CHERWIN_SCRIPT
 类型：公开仓库
-链接：https://github.com/CHERWING/CHERWIN_SCRIPTS.git
+链接：ql repo https://github.com/CHERWING/CHERWIN_SCRIPTS.git "" "" "CHERWIN_TOOLS.py|notify.py" "" ""
 定时类型：crontab
 定时规则：随便
 文件后缀：py
