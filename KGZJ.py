@@ -151,8 +151,8 @@ class RUN:
                 data = response.get('data', {})
                 if data:
                     scoreTypeName = data.get('scoreTypeName', '')
-                    totalScore = data.get('totalScore', '')
-                    Log(f'>当前{scoreTypeName}：【{totalScore}】✅')
+                    activeScore = data.get('activeScore', '')
+                    Log(f'>当前{scoreTypeName}：【{activeScore}】✅')
                 else:
                     Log('>获取积分信息失败❌')
             else:
@@ -196,7 +196,7 @@ class RUN:
             # 检查请求是否成功
             if response.get('code','-1'):
                 data = response.get('data', {})
-                rows = response.get('rows', [{}])
+                rows = data.get('rows', [{}])
                 random_element = random.choice(rows)
                 if random_element:
                     Log(f'>>>获取文章列表成功✅')
@@ -219,13 +219,15 @@ class RUN:
     def clickMedia(self,mediaId,appid):
         Log(f'======= 阅读文章 =======')
         try:
-            parmas={
-                'mpMediaId':mediaId,
-                'mediaId':mediaId,
-                 'appid' :appid
+            headers = self.headers.copy()
+            headers['Accept'] = "application/json, text/plain, */*"
+            data = {
+                "mpMediaId": mediaId,
+                "mediaId": mediaId,
+                "appid": appid
             }
             # 发送GET请求
-            response = self.do_request(f'https://shop.sctobacco.com/api/mc-server/mcMedia/clickMedia',method='GET',params=parmas)
+            response = self.do_request(f'https://shop.sctobacco.com/api/mc-server/mcMedia/clickMedia',params=data,headers=headers)
             # 检查请求是否成功
             if response.get('code','-1'):
                 message = response.get('message', {})
@@ -242,23 +244,22 @@ class RUN:
             # 捕获任何异常并打印
             print(e)
 
-    def clickMedia(self,mediaId,appid):
-        Log(f'======= 阅读文章 =======')
+
+    def lottery(self):
+        Log(f'======= 抽奖 =======')
         try:
             parmas={
-                'mpMediaId':mediaId,
-                'mediaId':mediaId,
-                 'appid' :appid
+                'activityId':'8a80895d8f15c558018f1992d33b0d97'
             }
             # 发送GET请求
-            response = self.do_request(f'https://shop.sctobacco.com/api/mc-server/mcMedia/clickMedia',method='GET',params=parmas)
+            response = self.do_request(f'https://shop.sctobacco.com/api/ac-server/lottery/complete',method='GET',params=parmas)
             # 检查请求是否成功
             if response.get('code','-1'):
                 message = response.get('message', {})
                 if message == "success":
-                    Log(f'>阅读文章成功✅')
+                    Log(f'>抽奖成功✅，{response}')
                 else:
-                    Log('>阅读文章失败❌')
+                    Log('>抽奖失败❌')
             else:
                 # 如果请求不成功，则打印错误信息
                 message = response.get('msg', '')
@@ -275,6 +276,7 @@ class RUN:
             self.sendMsg()
             return False
         self.myTask()
+        self.listForMobile()
         self.get_score()
         self.sendMsg()
         return True
