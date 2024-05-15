@@ -276,7 +276,7 @@ class RUN:
             self.sendMsg()
             return False
         self.myTask()
-        self.listForMobile()
+        # self.listForMobile()
         self.get_score()
         self.sendMsg()
         return True
