@@ -76,6 +76,9 @@ let JFY_URL = ''
 let FKP_URL = ''
 let pointRain_startId = ''
 let pointRain_activityStatus = true
+let QGY_inviteCode = []
+let AuthorinviteCode= ['IDTCLG','7LUL2L','BZZWJJ']
+let AuthorCid = ['4116743840','4094106667','4093679412']
 console.log('✨✨✨ 口味王会员中心小程序签到✨✨✨\n' +
     '✨ 功能：\n' +
     '      积分签到\n' +
@@ -104,7 +107,7 @@ UserCookieArr = ENV_SPLIT(UserCookie)
         // 版本检测
         await getVersion();
         Log(`\n 脚本执行✌北京时间(UTC+8)：${new Date(new Date().getTime() + new Date().getTimezoneOffset() * 60 * 1000 + 8 * 60 * 60 * 1000).toLocaleString()} `)
-        console.log(`\n================ 共找到 ${UserCookieArr.length} 个账号 ================ \n================ 版本对比检查更新 ================`);
+        console.log(`\n================ 共找到 【${UserCookieArr.length}】 个账号 ================ \n================ 版本对比检查更新 ================`);
         if (await compareVersions(local_version, APP_CONFIG['NEW_VERSION'])){
                 Log(`\n 当前版本：${local_version}`)
                 Log(`\n 最新版本：${APP_CONFIG['NEW_VERSION']}`)
@@ -123,11 +126,11 @@ UserCookieArr = ENV_SPLIT(UserCookie)
             one_msg = ''
             let send_UID = ''
             let num = index + 1
-            Log(`\n====== 开始第 ${num} 个账号 ------>>>>>`)
+            Log(`\n================ 开始第 【${num}】 个账号 -------->>>>>\n`)
             // console.log(UserCookieArr[index])
             if (num % 4 === 0) {
-                console.log('>>>>>>每4个账号等待180秒继续执行')
-                await $.wait(1000*180);
+                console.log('>>>>>>每4个账号等待60秒继续执行')
+                await $.wait(1000*60);
             }
             await $.wait(await delay());
             let split_info = UserCookieArr[index].split("@")
@@ -150,11 +153,34 @@ UserCookieArr = ENV_SPLIT(UserCookie)
             await DO_QGY(num);
             await $.wait(2000);
             await DO_FKP();
-            await $.wait(2000);
+            await $.wait(5000);
             await DO_PointRain();
             //log(`\n==== 积分查询 ====\n`)
             await getMemberScore();
 
+            console.log('\n====== 开始一对一推送 ======')
+            if (len_split_info > 0 && last_info.includes("UID_")) {
+                console.log(`>检测到设置了UID:【${last_info}】✅`);
+                send_UID = last_info
+                await send_wxpusher(send_UID,one_msg,APP_NAME);
+            }else{
+                Log('>未检测到wxpusher UID，不执行一对一推送❌')
+            }
+            await $.wait(3000);
+        }
+        for (let index = 0; index < UserCookieArr.length; index++) {
+            one_msg = ''
+            let send_UID = ''
+            let num = index + 1
+            Log(`\n================ 开始第 【${num}】 个账号本地互助 -------->>>>>\n`)
+            await $.wait(await delay());
+            let split_info = UserCookieArr[index].split("@")
+            memberId = split_info[0];
+            unionid = split_info[1];
+            let len_split_info = split_info.length
+            let last_info = split_info[len_split_info - 1]
+
+            await QGY_help(num)
             console.log('\n====== 开始一对一推送 ======')
             if (len_split_info > 0 && last_info.includes("UID_")) {
                 console.log(`>检测到设置了UID:【${last_info}】✅`);
@@ -628,7 +654,12 @@ async function setCookies() {
                     },
                 }, function (err, res, body) {
                     gameCookie = res.request.headers.cookie;
-                    console.log(`>转换Cookie成功！✅`)
+                    if (gameCookie){
+                        console.log(`>转换Cookie成功！✅`)
+                    }else{
+                        console.log(`>转换Cookie失败！❌`)
+                    }
+
                 })
         } catch (e) {
             console.log(e)
@@ -675,18 +706,11 @@ async function DO_QGY(num) {
         isGuide = await stepNewGuide()
     }
 
-    var inviteCodeLi=['IDTCLG','7LUL2L','BZZWJJ']
-    for(var i = 1;i <= inviteCodeLi.length;i++){
-        await $.wait(2000);
-        await getTokenStr(baseUrl);
-        qgyToken = dealToken(tokenStr, tokenKeyStr);
-        await $.wait(2000);
-        await qgyInviteAssist(baseUrl,qgyToken,inviteCodeLi[i-1])
-    }
+
 
     await $.wait(2000);
     await getQgyInfo(baseUrl);
-    
+
     await getTokenStr(baseUrl);
     await $.wait(2000);
     await qgyCheckQuery(baseUrl);
@@ -734,7 +758,8 @@ async function DO_QGY(num) {
         console.log(`>正在旅行中或青果不足20`);
     }
     await $.wait(2000);
-    await getQgyInfo(baseUrl);
+    await queryQgyTask(baseUrl);
+    await $.wait(2000);
     if (qgyTaskData.length == 0) {
         Log(`账号【${num}】获取青果园任务异常！❌`);
     } else {
@@ -758,6 +783,21 @@ async function DO_QGY(num) {
                 await sendPrize(baseUrl,taskCode,prizePendingCode,title,qgyToken);
             } else {
                 switch (id) {
+                    case '1vp2qd9d':// 邀请好友参与种树
+                        console.log(`>>>准备执行任务:【${title}】`);
+                        await getTokenStr(baseUrl);
+                        await $.wait(2000);
+                        await get_QGY_InviteCode(baseUrl,dealToken(tokenStr, tokenKeyStr))
+                        break;
+
+                    case 'jnb9obsa':// 赠送好友能量
+                        console.log(`>>>准备执行任务:【${title}】`);
+                        for (var i=0;i<=AuthorCid.length;i++){
+                            await getTokenStr(baseUrl);
+                            await $.wait(2000);
+                            await QGY_giveEnergy(baseUrl,dealToken(tokenStr, tokenKeyStr),AuthorCid[i-1])
+                        }
+                        break;
                     case '5re9y7rb':// 浏览资讯页
                     case '8pu8vs3s':// 参与海岛跳一跳
                     case 'm2jlv8yb':// 参与欢乐消除
@@ -770,8 +810,8 @@ async function DO_QGY(num) {
                             await $.wait(2000);
                             qgyToken = dealToken(tokenStr, tokenKeyStr);
                             await $.wait(2000);
-
                             prizePendingCode = await doCompleted(baseUrl, qgyToken, taskCode, title);
+
                             if (prizePendingCode != ''){
                                 await getTokenStr(baseUrl);
                                 await $.wait(2000);
@@ -792,10 +832,22 @@ async function DO_QGY(num) {
 
         }
     }
-    await queryQgyTask(baseUrl);
+
+    if (AuthorinviteCode){
+        for(var i = 1;i <= AuthorinviteCode.length;i++){
+            await $.wait(2000);
+            await getTokenStr(baseUrl);
+            qgyToken = dealToken(tokenStr, tokenKeyStr);
+            await $.wait(2000);
+            await qgyInviteAssist(baseUrl,qgyToken,AuthorinviteCode[i-1])
+        }
+    }
+
+    await getQgyInfo(baseUrl);
+
     if (qgyProcess !== 'NaN%') {
         if (leftEnergyNum > 0) {
-            var leftEnergyTimes = leftEnergyNum > 1 && leftEnergyNum < 20 ? 1 : Math.floor(leftEnergyNum / 20);
+            var leftEnergyTimes = Math.ceil(leftEnergyNum / 20);;
             console.log(`>可以加能量【${leftEnergyTimes}】次`);
             for (var i = 1; i <= leftEnergyTimes; i++) {
                 console.log(`>>开始第 ${i} 次能量加速！`);
@@ -818,6 +870,37 @@ async function DO_QGY(num) {
         console.log('>您还是先去种植把！❌')
     }
     return true;
+}
+
+async function QGY_help(num){
+    console.log('\n====== 开始嫩青果园本地互助 ======')
+    qgyUrl = 'https://89420.activity-20.m.duiba.com.cn/projectx/p124e3402/index.html?appID=89420';
+    await loginFreePlugin(qgyUrl);
+    await $.wait(3000)
+    if (loginUrl == "") {
+        Log(`账号【${num}】登录青果园异常❌，自动跳过任务！`);
+        return false;
+    }
+    await setCookies();
+    await $.wait(3000);
+    if (gameCookie == "") {
+        Log(`账号【${num}】cookies异常❌，自动跳过任务！`);
+        return false;
+    }
+    var urlMatch = qgyUrl.match('([^/]+)/?$');
+    var baseUrl = qgyUrl.replace(urlMatch[0], '');
+    await getTokenKeyStr(baseUrl);
+    await $.wait(2000);
+    if (QGY_inviteCode){
+            console.log('当前全部邀请码：'+QGY_inviteCode)
+            for(var i = 1;i <= QGY_inviteCode.length;i++){
+                await $.wait(2000);
+                await getTokenStr(baseUrl);
+                qgyToken = dealToken(tokenStr, tokenKeyStr);
+                await $.wait(2000);
+                await qgyInviteAssist(baseUrl,qgyToken,QGY_inviteCode[i-1])
+            }
+    }
 }
 /**
  * 获取token
@@ -941,11 +1024,16 @@ async function qgyInviteAssist(baseUrl,token,inviteCode) {
         axios.request(options).then(function (response) {
             try {
                 var data = response.data;
-
                 if(data.success){
-                    console.log('>助力作者成功！感谢您的支持！')
+                    if(AuthorinviteCode.includes(inviteCode)){
+                        console.log(`>助力作者成功！感谢您的支持！`)
+                    }else{
+                        console.log(`>助力【${inviteCode}】成功！`)
+                    }
+
                 }else{
-                    console.log('>助力作者失败！')
+                    console.log(`>助力【${inviteCode}】失败！`)
+
                 }
             } catch (e) {
                 console.log(`>助力异常❌：${JSON.stringify(data)}，原因：${e}`)
@@ -1506,8 +1594,14 @@ async function loveGame_submitGame(baseUrl,Token) {
             let prizeCount;
             try {
                 var data = response.data;
-                prizeCount = data.data.prizeCount;
-                Log(`>获得翻牌机会：${prizeCount}✅`)
+
+                if (data.success){
+                    prizeCount = data.data.prizeCount;
+                    Log(`>获得翻牌机会：${prizeCount}✅`)
+                }else{
+                    Log(`>提交游戏结果失败: ❌`)
+                }
+
             } catch (e) {
                 console.log(`>提交游戏结果失败: ❌ , 状态异常：${JSON.stringify(data)}，原因：${e}`)
             }
@@ -1627,7 +1721,7 @@ async function pointRain_submitGame(baseUrl,Token) {
         var host = (url.split('//')[1]).split('/')[0];
         // console.log(pointRain_startId)
         // console.log(req_time)score startId ulugE8zIZeTU3tDNKtohw false
-        var score =randomInt(330, 350)
+        var score =randomInt(350, 400)
         var req_sign = `${score}${pointRain_startId}ulugE8zIZeTU3tDNKtohwfalse`
         // console.log(req_sign)
         req_sign = MD5Encrypt(req_sign)
@@ -1704,15 +1798,17 @@ async function DO_FKP(num) {
         //⑤完成第4次通关，倒计时5分钟后获得1次机会，通关后获得1次免费翻卡牌机会。
 
         console.log('====== 开始找爱游戏 ======')
+
         await getTokenStr(baseUrl);
         await $.wait(2000);
-        await loveGame_startGame(baseUrl, dealToken(tokenStr, tokenKeyStr))
-
-        await $.wait(2000);
-        await getTokenStr(baseUrl);
-        await $.wait(2000);
-        await loveGame_submitGame(baseUrl, dealToken(tokenStr, tokenKeyStr))
-
+        let Token = dealToken(tokenStr, tokenKeyStr);
+        await loveGame_startGame(baseUrl, Token)
+        if (loveGame_recordId!=''){
+            await getTokenStr(baseUrl);
+            await $.wait(2000);
+            let Token = dealToken(tokenStr, tokenKeyStr);
+            await loveGame_submitGame(baseUrl, Token)
+        }
         await $.wait(2000);
         await getTokenStr(baseUrl);
         await $.wait(2000);
@@ -1724,30 +1820,13 @@ async function DO_FKP(num) {
             await $.wait(downTime+5000);
         }
 
-        if (lessGameCount >0){
-        await getTokenStr(baseUrl);
-        await $.wait(2000);
-        let Token = dealToken(tokenStr, tokenKeyStr);
-        await loveGame_startGame(baseUrl, Token)
-        if (loveGame_recordId!=''){
-            await getTokenStr(baseUrl);
-            await $.wait(2000);
-            let Token = dealToken(tokenStr, tokenKeyStr);
-            await loveGame_submitGame(baseUrl, Token)
-        }
-    }else{
-            break;
-        }
+
     }
 
-    await getTokenKeyStr(baseUrl);
-    await getTokenStr(baseUrl);
-    await $.wait(2000);
-    await openBox(baseUrl,dealToken(tokenStr, tokenKeyStr))
     await fkpindex(baseUrl)
     await $.wait(2000);
     if(drawTimes > 0){
-        for (var i=1;i<drawTimes;i++){
+        for (var i=1;i<=drawTimes;i++){
             console.log(`开始第【${i}】次翻牌`)
             await getTokenKeyStr(baseUrl);
             await getTokenStr(baseUrl);
@@ -1755,6 +1834,10 @@ async function DO_FKP(num) {
             await fkp_draw(baseUrl,dealToken(tokenStr, tokenKeyStr))
         }
     }
+    await getTokenKeyStr(baseUrl);
+    await getTokenStr(baseUrl);
+    await $.wait(2000);
+    await openBox(baseUrl,dealToken(tokenStr, tokenKeyStr))
 
 
 }
@@ -1762,29 +1845,29 @@ async function DO_FKP(num) {
 
 async  function DO_PointRain(){
     console.log('\n--------------------开始积分雨活动----------------------')
-    JFY_URL= 'https://89420.activity-20.m.duiba.com.cn/projectx/p03c58ec7/index.html?appID=89420&inviteCode=YM3E0C&from=login&spm=89420.1.1.1'
+    JFY_URL= 'https://89420.activity-20.m.duiba.com.cn/projectx/p03c58ec7/index.html?appID=89420'
     urlMatch = JFY_URL.match('([^/]+)/?$');
     baseUrl = JFY_URL.replace(urlMatch[0], '');
     // console.log(baseUrl)
     await loginFreePlugin(JFY_URL);
-    await $.wait(2000)
+    await $.wait(3000)
     if (loginUrl == "") {
         Log(`账号【${num}】登录积分雨异常❌，自动跳过任务！`);
         return false;
     }
     await setCookies();
-    await $.wait(2000);
+    await $.wait(3000);
     if (gameCookie == "") {
         Log(`账号【${num}】积分雨cookies异常❌，自动跳过任务！`);
         return false;
     }
-    await getTokenKeyStr(baseUrl);
     await $.wait(2000);
+    await getTokenKeyStr(baseUrl);
     await getTokenStr(baseUrl);
     await $.wait(2000);
     await pointRain_gameIndex(baseUrl, dealToken(tokenStr, tokenKeyStr))
     if (!pointRain_activityStatus){
-        return ;
+        return false;
     }
     if (pointRain_times!=0){
         console.log('开始积分雨游戏')
@@ -2029,7 +2112,6 @@ async function getQgyInfo(baseUrl) {
             try {
                 var data = response.data;
                 if (data.hasOwnProperty('data') && data.data.hasOwnProperty('treeInfo')) {
-
                     energyNum = data.data.treeInfo.energyNum;
                     upNeedNum = data.data.treeInfo.upNeedNum;
                     isTravelling = data.data.travel;
@@ -2087,8 +2169,13 @@ async function queryQgyTask(baseUrl) {
         axios.request(options).then(function (response) {
             try {
                 var data = response.data;
-                console.log(`>获取果园任务列表成功✅`)
-                qgyTaskData = data.data.item;
+                if (data.hasOwnProperty('data')) {
+                    console.log(`>获取果园任务列表成功✅`)
+                    qgyTaskData = data.data.item;
+                }else{
+                    console.log(`>获取果园任务列表失败❌`)
+                }
+
             } catch (e) {
                 console.log(`获取果园任务列表异常❌：${JSON.stringify(data)}，原因：${e}`)
             }
@@ -2209,6 +2296,105 @@ async function sendPrize(baseUrl,taskCode,PendingCode,title,qgyToken) {
             resolve();
         });
     })
+}
+async function get_QGY_InviteCode(baseUrl, token) {
+    // Log('====== 执行青果')
+    return new Promise((resolve) => {
+        var url = baseUrl + 'inviteAssist_1/getInviteCode.do';
+        var host = (url.split('//')[1]).split('/')[0];
+        var options = {
+            method: 'GET',
+            url: url,
+            params: {_t: timestampMs()},
+            headers: {
+                cookie: gameCookie,
+                Host: host,
+                'user-sign': getUserSign(memberId, timestamp, trandom).toLowerCase(),
+                'user-timestamp': timestamp,
+                'user-random': trandom,
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Origin: 'https://89420.activity-20.m.duiba.com.cn',
+                Connection: 'keep-alive',
+                Accept: '*/*',
+                'User-Agent': getUA(),
+                Referer: qgyUrl + '&shareCode=BZZWJJ&from=login&spm=89420.1.1.1',
+                'Accept-Language': 'zh-CN,zh-Hans;q=0.9'
+            },
+            data: {}
+        };
+        axios.request(options).then(function (response) {
+            try {
+                var data = response.data;
+                if (data.hasOwnProperty('success') && data.success) {
+                    var inviteCode = data.data.inviteCode
+                    console.log(`>获取邀请码成功：【${inviteCode}】✅`)
+                    QGY_inviteCode.push(inviteCode)
+                    console.log('当前全部邀请码：'+QGY_inviteCode)
+                    return QGY_inviteCode
+                } else {
+                    console.log(`>完成【${taskTitle}】任务失败❌：${data.message}`)
+                    return ''
+                }
+            } catch (e) {
+                console.log(`>完成【${taskTitle}】任务异常❌：${JSON.stringify(data)}，原因：${e}`)
+            }
+        }).catch(function (error) {
+            console.error(error);
+        }).then(res => {
+            //这里处理正确返回
+            resolve();
+        });
+    })
+
+}
+
+async function QGY_giveEnergy(baseUrl, token,cid) {
+    // Log('====== 执行青果')
+    return new Promise((resolve) => {
+        var url = baseUrl + 'main/giveEnergy.do';
+        var host = (url.split('//')[1]).split('/')[0];
+        var options = {
+            method: 'GET',
+            url: url,
+            // main/giveEnergy.do?cid=4093679412&token=paeb87e2&user_type=1&is_from_share=1&_t=1715877738068
+            params: {cid:cid,token:token,user_type:1,is_from_share:1,_t: timestampMs()},
+            headers: {
+                cookie: gameCookie,
+                Host: host,
+                'user-sign': getUserSign(memberId, timestamp, trandom).toLowerCase(),
+                'user-timestamp': timestamp,
+                'user-random': trandom,
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Origin: 'https://89420.activity-20.m.duiba.com.cn',
+                Connection: 'keep-alive',
+                Accept: '*/*',
+                'User-Agent': getUA(),
+                Referer: qgyUrl + '&shareCode=BZZWJJ&from=login&spm=89420.1.1.1',
+                'Accept-Language': 'zh-CN,zh-Hans;q=0.9'
+            },
+            data: {}
+        };
+        axios.request(options).then(function (response) {
+            try {
+                var data = response.data;
+                if (data.hasOwnProperty('success') && data.success) {
+                    console.log(`>赠送能量成功！(不消耗自身能量)✅`)
+
+                } else {
+                    console.log(`>赠送好友能量失败❌：${data.message}`)
+
+                }
+            } catch (e) {
+                console.log(`>完成【${taskTitle}】任务异常❌：${JSON.stringify(data)}，原因：${e}`)
+            }
+        }).catch(function (error) {
+            console.error(error);
+        }).then(res => {
+            //这里处理正确返回
+            resolve();
+        });
+    })
+
 }
 
 /**
