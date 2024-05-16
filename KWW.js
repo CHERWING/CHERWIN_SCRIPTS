@@ -1,7 +1,7 @@
 /**
  *
  * 项目名称：口味王小程序
- * 项目抓包：抓tls-xw.mengniu.cn下的memberId & memberUnionid填入变量
+ * 项目抓包：抓tls-xw.mengniu.cn下的memberId@memberUnionid填入变量
  * 项目变量：KWW
  * 项目定时：每40分钟运行一次
  * cron: 0 9 * * *
