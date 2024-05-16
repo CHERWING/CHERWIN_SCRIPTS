@@ -155,14 +155,14 @@ UserCookieArr = ENV_SPLIT(UserCookie)
             //log(`\n==== 积分查询 ====\n`)
             await getMemberScore();
 
-            // console.log('\n====== 开始一对一推送 ======')
-            // if (len_split_info > 0 && last_info.includes("UID_")) {
-            //     console.log(`>检测到设置了UID:【${last_info}】✅`);
-            //     send_UID = last_info
-            //     await send_wxpusher(send_UID,one_msg,APP_NAME);
-            // }else{
-            //     Log('>未检测到wxpusher UID，不执行一对一推送❌')
-            // }
+            console.log('\n====== 开始一对一推送 ======')
+            if (len_split_info > 0 && last_info.includes("UID_")) {
+                console.log(`>检测到设置了UID:【${last_info}】✅`);
+                send_UID = last_info
+                await send_wxpusher(send_UID,one_msg,APP_NAME);
+            }else{
+                Log('>未检测到wxpusher UID，不执行一对一推送❌')
+            }
             await $.wait(5000);
         }
         Log(APP_CONFIG['GLOBAL_NTC'])
