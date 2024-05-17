@@ -1192,7 +1192,7 @@ class RUN:
         time.sleep(wait_time)  # 等待
         one_msg = ''
         if not self.login_res: return False
-        执行签到任务
+        #执行签到任务
         self.sign()
         self.superWelfare_receiveRedPacket()
         self.get_SignTaskList()
