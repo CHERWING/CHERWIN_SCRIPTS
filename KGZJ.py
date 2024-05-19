@@ -47,43 +47,96 @@ class RUN:
         Log(f"\n---------开始执行第{self.index}个账号>>>>>")
         self.s = requests.session()
         self.s.verify = False
-
+        self.UA = 'Mozilla/5.0 (Linux; Android 14; 23116PN5BC Build/UKQ1.230804.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/116.0.0.0 Mobile Safari/537.36 XWEB/1160117 MMWEBSDK/20240404 MMWEBID/5860 MicroMessenger/8.0.49.2600(0x2800313B) WeChat/arm64 Weixin NetType/WIFI Language/zh_CN ABI/arm64 MiniProgramEnv/android'
+        self.Referer = 'https://servicewechat.com/wxb6bc0796e0f0db00/224/page-frame.html'
         self.headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 MicroMessenger/7.0.20.1781(0x6700143B) NetType/WIFI MiniProgramEnv/Windows WindowsWechat/WMPF WindowsWechat(0x63090a13) XWEB/9129',
+            'Host': 'shop.sctobacco.com',
+            'Connection': 'keep-alive',
+            # 'Content-Length': '50',
+            'charset': 'utf-8',
+            'User-Agent': self.UA,
+            'content-type': 'application/x-www-form-urlencoded',
+            # 'Accept-Encoding': 'gzip,compress,br,deflate',
+            'Referer': self.Referer,
+        }
+        self.headers2 = {
+            'User-Agent': self.UA,
             'Host': 'shop.sctobacco.com',
             'Connection': 'keep-alive',
             'xweb_xhr': '1',
             'gray': '0',
-            'token': self.token,
             'Accept': '*/*',
             'Sec-Fetch-Site': 'cross-site',
             'Sec-Fetch-Mode': 'cors',
             'Sec-Fetch-Dest': 'empty',
-            'Referer': 'https://servicewechat.com/wxb6bc0796e0f0db00/224/page-frame.html',
+            'Referer': self.Referer,
             'Accept-Encoding': 'gzip, deflate, br',
             'Accept-Language': 'zh-CN,zh;q=0.9'
         }
-        self.s.headers.update(self.headers)
+        self.IsLogin = False
 
 
-    def do_request(self, url, method='POST',params=None, data=None, headers=None):
-
+    def make_request(self, url, method='post', headers={}, data = None,json_data = None,params=None):
+        if headers == {}:
+            headers = self.headers
+        # if params == {}:
+        #     params = self.default_data
         try:
-            response = self.s.request(method, url, params=params, json=data, headers=headers)
-            response.raise_for_status()
+            if method.lower() == 'get':
+                response = self.s.get(url, headers=headers, verify=False,params=params)
+
+            elif method.lower() == 'post':
+                response = self.s.post(url, headers=headers, data=data,json = json_data,params=params, verify=False)
+            else:
+                raise ValueError("不支持的请求方法❌: " + method)
             return response.json()
+        except requests.exceptions.RequestException as e:
+            print("请求异常❌：", e)
+        except ValueError as e:
+            print("值错误或不支持的请求方法❌：", e)
         except Exception as e:
-            print(f"请求错误: {e}")
-            return None
+            print("发生了未知错误❌：", e)
+
+
+    def miniloginAuto(self):
+        Log(f'======= 获取Token =======')
+        self.IsLogin = False
+        try:
+            data = f'code={self.token}&oldCode=null'
+            # 发送GET请求
+            response = self.make_request('https://shop.sctobacco.com/api/mc-server/sso/miniloginAuto',method='POST',data=data)
+            # 检查请求是否成功
+            response_code = response.get('code','-1')
+            if response_code == 1:
+                self.IsLogin = True
+                data = response.get('data', {})
+                token = response.get('token', '')
+                # 提取个人信息
+                Log(f'登陆成功！获取Token成功：【{token}】✅')
+
+                self.headers2['token'] = token
+            else:
+                # 如果请求不成功，则打印错误信息
+                message = response.get('msg', '')
+                Log(f'>>登录失败❌: {message}')
+
+        except Exception as e:
+            # 捕获任何异常并打印
+            print(e)
+
+        finally:
+            # 最终返回请求是否成功的标志
+            return self.IsLogin
 
     def personal_info(self):
         Log(f'======= 查询用户信息 =======')
         personal_info_valid = False
         try:
             # 发送GET请求
-            response = self.do_request('https://shop.sctobacco.com/api/mc-server/mypage/simpleInfo',method='GET')
+            response = self.make_request('https://shop.sctobacco.com/api/mc-server/mypage/simpleInfo',method='GET',headers=self.headers2)
             # 检查请求是否成功
-            if response.get('code','-1'):
+            response_code = response.get('code', '-1')
+            if response_code == 1:
                 personal_info_valid = True
                 data = response.get('data', {})
                 mobile_phone = data.get('phone','')
@@ -110,9 +163,10 @@ class RUN:
         try:
 
             # 发送GET请求
-            response = self.do_request('https://shop.sctobacco.com/api/mc-server/mcTask/myTask',method='GET')
+            response = self.make_request('https://shop.sctobacco.com/api/mc-server/mcTask/myTask',method='GET',headers=self.headers2)
             # 检查请求是否成功
-            if response.get('code','-1'):
+            response_code = response.get('code', '-1')
+            if response_code == 1:
                 data = response.get('data', {})
                 taskList = data.get('taskList',[{}])
                 skip_task =[50001,50002,30002]
@@ -145,9 +199,10 @@ class RUN:
         try:
             timestamp = int(time.time() * 1000)
             # 发送GET请求
-            response = self.do_request(f'https://shop.sctobacco.com/api/sc-server/log/detail?scoreTypeId=jifen001',method='GET')
+            response = self.make_request(f'https://shop.sctobacco.com/api/sc-server/log/detail?scoreTypeId=jifen001',method='GET',headers=self.headers2)
             # 检查请求是否成功
-            if response.get('code','-1'):
+            response_code = response.get('code', '-1')
+            if response_code == 1:
                 data = response.get('data', {})
                 if data:
                     scoreTypeName = data.get('scoreTypeName', '')
@@ -169,9 +224,10 @@ class RUN:
         try:
             timestamp = int(time.time() * 1000)
             # 发送GET请求
-            response = self.do_request(f'https://shop.sctobacco.com/api/ac-server/manage/acSignMemberLog/SignSubmit?t={timestamp}',method='GET')
+            response = self.make_request(f'https://shop.sctobacco.com/api/ac-server/manage/acSignMemberLog/SignSubmit?t={timestamp}',method='GET',headers=self.headers2)
             # 检查请求是否成功
-            if response.get('code','-1'):
+            response_code = response.get('code', '-1')
+            if response_code == 1:
                 data = response.get('data', '')
                 if data:
                     Log(f'>签到成功✅，获得{data}积分')
@@ -192,9 +248,10 @@ class RUN:
         try:
             timestamp = int(time.time() * 1000)
             # 发送GET请求
-            response = self.do_request(f'https://shop.sctobacco.com/api/mc-server/mcMedia/listForMobile?t={timestamp}&offset=0&limit=10&isShow=1',method='GET')
+            response = self.make_request(f'https://shop.sctobacco.com/api/mc-server/mcMedia/listForMobile?t={timestamp}&offset=0&limit=10&isShow=1',method='GET',headers=self.headers2)
             # 检查请求是否成功
-            if response.get('code','-1'):
+            response_code = response.get('code', '-1')
+            if response_code == 1:
                 data = response.get('data', {})
                 rows = data.get('rows', [{}])
                 random_element = random.choice(rows)
@@ -219,7 +276,7 @@ class RUN:
     def clickMedia(self,mediaId,appid):
         Log(f'======= 阅读文章 =======')
         try:
-            headers = self.headers.copy()
+            headers = self.headers2.copy()
             headers['Accept'] = "application/json, text/plain, */*"
             data = {
                 "mpMediaId": mediaId,
@@ -227,9 +284,10 @@ class RUN:
                 "appid": appid
             }
             # 发送GET请求
-            response = self.do_request(f'https://shop.sctobacco.com/api/mc-server/mcMedia/clickMedia',params=data,headers=headers)
+            response = self.make_request(f'https://shop.sctobacco.com/api/mc-server/mcMedia/clickMedia',params=data,headers=headers)
             # 检查请求是否成功
-            if response.get('code','-1'):
+            response_code = response.get('code', '-1')
+            if response_code == 1:
                 message = response.get('message', {})
                 if message == "success":
                     Log(f'>阅读文章成功✅')
@@ -252,9 +310,10 @@ class RUN:
                 'activityId':'8a80895d8f15c558018f1992d33b0d97'
             }
             # 发送GET请求
-            response = self.do_request(f'https://shop.sctobacco.com/api/ac-server/lottery/complete',method='GET',params=parmas)
+            response = self.make_request(f'https://shop.sctobacco.com/api/ac-server/lottery/complete',method='GET',params=parmas,headers=self.headers2)
             # 检查请求是否成功
-            if response.get('code','-1'):
+            response_code = response.get('code', '-1')
+            if response_code == 1:
                 message = response.get('message', {})
                 if message == "success":
                     Log(f'>抽奖成功✅，{response}')
@@ -271,10 +330,11 @@ class RUN:
 
 
     def main(self):
-        if not self.personal_info() :
+        if not self.miniloginAuto() :
             Log("用户信息无效，请更新CK")
             self.sendMsg()
             return False
+        self.personal_info()
         self.myTask()
         # self.listForMobile()
         self.get_score()
@@ -322,7 +382,7 @@ def import_Tools():
 if __name__ == '__main__':
     APP_NAME = '宽哥之家小程序'
     ENV_NAME = 'KGZJ'
-    CK_NAME = 'token'
+    CK_NAME = 'code'
     print(f'''
 ✨✨✨ {APP_NAME}签到✨✨✨
 ✨ 功能：
@@ -331,7 +391,7 @@ if __name__ == '__main__':
   打开{APP_NAME}
   授权登陆
   打开抓包工具
-  找请求头带{CK_NAME}的URl
+  找https://shop.sctobacco.com/api/mc-server/sso/miniloginAuto请求body{CK_NAME}
   复制里面的{CK_NAME}参数值
 ✨ ✨✨wxpusher一对一推送功能，
   ✨需要定义变量export WXPUSHER=wxpusher的app_token，不设置则不启用wxpusher一对一推送
@@ -345,7 +405,7 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
 ✨✨✨ @Author CHERWIN✨✨✨
 ''')
     local_script_name = os.path.basename(__file__)
-    local_version = '2024.05.15'
+    local_version = '2024.05.19'
     if IS_DEV:
         import_Tools()
     else:
