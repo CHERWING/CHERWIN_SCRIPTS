@@ -11,7 +11,7 @@
  */
 
 //===============脚本版本=================//
-let local_version = "2024.05.14";
+let local_version = "2024.05.20";
 //=======================================//
 const APP_NAME = '网易生活研究社小程序'
 const ENV_NAME = 'WYSHYJS'
@@ -85,8 +85,9 @@ UserCookieArr = ENV_SPLIT(UserCookie)
         } else {
             // 版本检测
             await getVersion();
-            Log(`\n 脚本执行✌北京时间(UTC+8)：${new Date(new Date().getTime() + new Date().getTimezoneOffset() * 60 * 1000 + 8 * 60 * 60 * 1000).toLocaleString()} \n================ 共找到 ${UserCookieArr.length} 个账号 ================\n================ 版本对比检查更新 ================`);
-            if (APP_CONFIG['NEW_VERSION'] != local_version) {
+            Log(`\n 脚本执行✌北京时间(UTC+8)：${new Date(new Date().getTime() + new Date().getTimezoneOffset() * 60 * 1000 + 8 * 60 * 60 * 1000).toLocaleString()} `)
+        console.log(`\n================ 共找到 【${UserCookieArr.length}】 个账号 ================ \n================ 版本对比检查更新 ================`);
+        if (await compareVersions(local_version, APP_CONFIG['NEW_VERSION'])){
                 Log(`\n 当前版本：${local_version}`)
                 Log(`\n 最新版本：${APP_CONFIG['NEW_VERSION']}`)
                 if (SCRIPT_UPDATE==true){
@@ -96,9 +97,9 @@ UserCookieArr = ENV_SPLIT(UserCookie)
                     downloadFile(fileUrl, downloadPath)
                 }
 
-            } else {
-                Log(`版本信息：${local_version} ，已是最新版本无需更新开始执行脚本`)
-            }
+        }else{
+            console.log(`版本信息：${local_version} ，已是最新版本无需更新开始执行脚本`)
+        }
             for (let index = 0; index < UserCookieArr.length; index++) {
                 one_msg = ''
                 let send_UID = ''
@@ -157,6 +158,28 @@ UserCookieArr = ENV_SPLIT(UserCookie)
 )()
     .catch((e) => log(e))
     .finally(() => $.done())
+async function compareVersions(localVersion, serverVersion) {
+    const localParts = localVersion.split('.'); // 将本地版本号拆分成数字部分
+    const serverParts = serverVersion.split('.'); // 将服务器版本号拆分成数字部分
+
+    for (let i = 0; i < localParts.length && i < serverParts.length; i++) {
+        const localNum = parseInt(localParts[i]);
+        const serverNum = parseInt(serverParts[i]);
+
+        if (localNum < serverNum) {
+            return true; // 当前版本低于服务器版本
+        } else if (localNum > serverNum) {
+            return false; // 当前版本高于服务器版本
+        }
+    }
+
+    // 如果上述循环没有返回结果，则表示当前版本与服务器版本的数字部分完全相同
+    if (localParts.length < serverParts.length) {
+        return true; // 当前版本位数较短，即版本号形如 x.y 比 x.y.z 低
+    } else {
+        return false; // 当前版本与服务器版本相同或更高
+    }
+}
 
 /**
  * 开始脚本
@@ -210,12 +233,12 @@ async function start() {
             // 使用正则表达式匹配URL中的 signOperatingId
             await $.wait(2000);
             await doSign(baseUrl, baseHost);
-            if (orderNum == '') {
-                Log('>签到失败❌');
-                return false;
-            }
-            await $.wait(2000);
-            await signResult(baseUrl, baseHost);
+            // if ( orderNum == '' ) {
+            //     Log('>签到失败❌');
+            //     return false;
+            // }
+            // await $.wait(2000);
+            // await signResult(baseUrl, baseHost,orderNum);
         }
         await $.wait(2000);
         await getCredits(baseUrl, baseHost)
@@ -353,7 +376,8 @@ async function doSign(baseUrl, baseHost) {
 
                 if (success == true) {
                     orderNum = data.orderNum;
-                    Log(`>成功获取到orderNum：${orderNum}✅`);
+                    Log(`>签到成功✅`);
+                    Log(`>成功获取到orderNum：${orderNum}`);
                 } else {
                     let desc = result.desc;
                     Log(`>${desc}✅`);
@@ -371,7 +395,7 @@ async function doSign(baseUrl, baseHost) {
 
 }
 
-async function signResult(baseUrl, baseHost) {
+async function signResult(baseUrl, baseHost,orderNum) {
     Log('\n开始获取签到结果--->>>')
     return new Promise((resolve) => {
         let ts = Math.round(new Date().getTime() / 1000).toString();
@@ -379,6 +403,7 @@ async function signResult(baseUrl, baseHost) {
         let host = (url.split('//')[1]).split('/')[0]
         let options = {
             method: 'get',
+            params: { orderNum:orderNum,_t: timestampMs()},
             url: url,
             headers: {
                 'Host': host,
@@ -390,19 +415,22 @@ async function signResult(baseUrl, baseHost) {
                 'Referer': baseUrl + '&from=login&spm=89420.1.1.1',
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
-            data: `orderNum=${orderNum}&_=${timestampMs()}`
+            data:{
+
+            }
         }
         axios.request(options).then(function (response) {
             try {
                 // console.log(response)
                 let result = response.data
+                console.log(result)
                 let success = result.success;
                 if (success == true) {
                     console.log(result)
                     let data = result.data
                     signResult = data.signResult
                     if (signResult == 1) {
-                        Log(`>签到成功获得：${signResult}积分✅`)
+                        Log(`>签到回调成功获得：${signResult}积分✅`)
                     }
                 }else{
                     Log(`>签到结果异常❌`)
@@ -710,10 +738,10 @@ async function getCredits(baseUrl, baseHost) {
 
 
 // ============================================一对一推送============================================ \\
-async function send_wxpusher(UID, send_msg, title, help = false) {
+async function send_wxpusher(UID, send_msg, title, help=false) {
     const WXPUSHER = process.env.WXPUSHER || false;
     if (WXPUSHER) {
-        console.log('\n设置了WXPUSHER变量✅,开始一对一推送--->>>')
+        console.log('\n>WXPUSHER变量已设置✅')
         if (help) {
             title += '互助';
         }
@@ -735,19 +763,18 @@ async function send_wxpusher(UID, send_msg, title, help = false) {
         axios.post(webapi, data)
             .then(response => {
                 if (response.data.success) {
-                    console.log(">wxpusher消息发送成功✅");
+                    console.log(">>>一对一推送成功！✅");
                 } else {
-                    console.error(`>wxpusher消息发送失败❌。错误信息：${response.data.msg}`);
+                    console.error(`>>>一对一推送消息发送失败❌。错误信息：${response.data.msg}`);
                 }
             })
             .catch(error => {
-                console.error(`>wxpusher发送消息时发生错误❌：${error.message}`);
+                console.error(`>>>一对一推送发送消息时发生错误❌：${error.message}`);
             });
-    } else {
-        console.log('>未设置WXPUSHER变量❌，取消一对一推送')
+    }else{
+        console.log('>未设置WXPUSHER变量，取消一对一推送❌')
     }
 }
-
 
 // ============================================变量检查============================================ \\
 async function Envs() {
@@ -779,7 +806,7 @@ async function Envs() {
             return true;
         }
     } else {
-        console.log(`\n 系统变量【KWW】未定义❌`)
+        console.log(`\n 系统变量【${ENV_NAME}】未定义❌`)
         return;
     }
     return true;
@@ -831,7 +858,7 @@ async function SendMsg(message) {
  */
 function addNotifyStr(str, is_log = true) {
     if (is_log) {
-        log(`${str}\n`)
+        log(`${str}`)
     }
     msg += `${str}\n`
     one_msg += `${str}\n<br>`;
@@ -841,7 +868,7 @@ function addNotifyStr(str, is_log = true) {
  * 双平台log输出
  */
 function Log(data) {
-    console.log(`${data}\n`);
+    console.log(`${data}`);
     msg += `${data}\n`;
     one_msg += `${data}\n<br>`;
 }
@@ -1184,22 +1211,12 @@ function getVersion(timeout = 3 * 1000) {
                 const newVersion = config['APP_CONFIG'][ENV_NAME]['NEW_VERSION'];
                 // console.log(newVersion)
                 const ntc = config['APP_CONFIG'][ENV_NAME]['NTC'];
-                const ENABLE = config['APP_CONFIG'][ENV_NAME]['ENABLE'];
-                if(ENABLE==false){
-                    console.log('脚本未开放')
-                    process.exit();
-                }
                 // console.log(ntc)
                 const globalNtcHtml = config['GLOBAL_NTC_HTML'];
-                const globalNtc = config['GLOBAL_NTC'];
+                const globalNtc= config['GLOBAL_NTC'];
                 // console.log(globalNtc)
                 // 将获取到的值作为对象返回
-                APP_CONFIG = {
-                    'NEW_VERSION': newVersion,
-                    'NTC': ntc,
-                    'GLOBAL_NTC_HTML': globalNtcHtml,
-                    'GLOBAL_NTC': globalNtc
-                }
+                APP_CONFIG ={ 'NEW_VERSION':newVersion, 'NTC':ntc, 'GLOBAL_NTC_HTML':globalNtcHtml,'GLOBAL_NTC':globalNtc }
                 resolve(APP_CONFIG);
 
             } catch (e) {
@@ -1210,7 +1227,6 @@ function getVersion(timeout = 3 * 1000) {
         }, timeout)
     })
 }
-
 /**
  * time 输出格式：1970-01-01 00:00:00
  */
