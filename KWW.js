@@ -3,8 +3,8 @@
  * 项目名称：口味王小程序
  * 项目抓包：抓tls-xw.mengniu.cn下的memberId@memberUnionid填入变量
  * 项目变量：KWW
- * 项目定时：每40分钟运行一次
- * cron: 0 9 * * *
+ * 项目定时：每天9，18,20
+ * cron: 0 9,18,20 * * *
  * github仓库：https://github.com/CHERWING/CHERWIN_SCRIPTS
  *
  */
@@ -13,7 +13,7 @@
 let local_version = "2024.05.17";
 //=======================================//
 const APP_NAME = '口味王小程序'
-const $ = new Env(APP_NAME);
+const $ = new Env('口味王小程序');
 const ENV_NAME = 'KWW'
 
 const notify = $.isNode() ? require('./sendNotify') : '';
