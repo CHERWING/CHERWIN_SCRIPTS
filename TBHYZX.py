@@ -108,59 +108,13 @@ class RUN:
             data = response.get('Result', {})
             VipSignInDtl=data.get('VipSignInDtl', {})
             SignedDays=VipSignInDtl.get('SignedDays', '')
-            IsSigInToday=VipSignInDtl.get('SignedDays', False)
+            IsSigInToday=VipSignInDtl.get('IsSigInToday', False)
             # 手机号
             if IsSigInToday:
                 Log(f'>>今日已签到，累计签到：【{SignedDays}】天')
             else:
                 Log('开始签到')
                 self.SignIn()
-            return True
-        else:
-            Log('可能token失效了')
-            return False
-
-    def WxAppOnLoginNew(self):
-        Log('>>>>>>登陆')
-        url = "https://wxa-tp.ezrpro.com/myvip/Base/User/WxAppOnLoginNew"
-        # data = {
-        #     "code": self.token,
-        #     "CommonIdType": "VipWxUnionId",
-        #     "CommonId": "124948229",
-        #     "ShopId": 0,
-        #     "CommonIdSource": 47,
-        #     "Latitude": 0,
-        #     "Longitude": 0,
-        #     "InviteActObj": "{\"ActId\":50726}",
-        #     "PingId": "peLXqZCQAAD-C3PrZ36DkaE98NoLjuqQ",
-        #     # "PingDate": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        #     "PingDate": '2024-03-19 22:23:01'
-        # }
-        data = {
-            "CommonIdType": "VipWxUnionId",
-            "CommonId": "",
-            "ShopId": 0,
-            "CommonIdSource": 47,
-            "Latitude": 0,
-            "Longitude": 0,
-            "InviteActObj": "{\"ActId\":50726}",
-            "code": "0c1QVUFa1bogqH0W87Ga1ZHjjG3QVUFP",
-            "PingId": "peLXqZCQAAD-C3PrZ36DkaE98NoLjuqQ",
-            "PingDate": "2024-03-19 22:23:01"
-        }
-        response = s.post(url, headers=self.headers,json=data)
-        response = response.json()
-        # print(response.text)
-        if response.get('Success',False):
-            Log('登录成功！')
-            Result=response.get('Result', {})
-            Fields = Result.get('Fields', '')
-            Fields = json.loads(Fields)
-
-            # 遍历 token 字典，更新请求头参数
-            for key, value in Fields.items():
-                self.headers[key] = value
-            # print(self.headers)
             return True
         else:
             Log('可能token失效了')
@@ -176,13 +130,14 @@ class RUN:
             response = s.post(url, headers=self.headers,json=data)
             response = response.json()
             # print(response)
-            if response.get('Success',False):
+            if response.get('Success', False):
                 data = response.get('Result', {})
-                ErrMsg=data.get('ErrMsg', '')
-                Log(ErrMsg)
+                BonusValue = data.get('BonusValue', '')
+                Log(f'签到成功，获得：【{BonusValue}】积分')
                 return True
             else:
-                Log('可能token失效了')
+                ErrMsg = response.get('ErrMsg', '')
+                Log(f'签到失败：{ErrMsg}')
                 return False
 
 
@@ -278,7 +233,7 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
 ✨✨✨ @Author CHERWIN✨✨✨
 ''')
     local_script_name = os.path.basename(__file__)
-    local_version = '2024.05.15'
+    local_version = '2024.05.21'
     if IS_DEV:
         import_Tools()
     else:
