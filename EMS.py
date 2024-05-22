@@ -7,6 +7,8 @@
 # const $ = new Env('EMS邮惠中心小程序')
 
 import os
+from datetime import date
+
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
@@ -73,7 +75,8 @@ class RUN:
             return None
 
     def findByOpenIdAppId(self):
-        Log(f"====== 获取TOKEN ======")
+        act_name = '获取TOKEN'
+        Log(f"\n====== {act_name} ======")
         try:
             params = {
                 "appId":"wx52872495fb375c4b",
@@ -87,18 +90,18 @@ class RUN:
                 self.token = info.get('token', '')
                 self.memberId = info.get('memberId', '')
                 self.headers['MC-TOKEN'] = self.token
-                Log(f'>>获取token成功✅')
+                Log(f'>>{act_name}成功✅')
                 # print(f'>用户ID：【{self.memberId}】')
                 return True
             else:
-                Log(f">获取TOKEN失败❌: {response}")
+                Log(f'{act_name}失败❌: {response}')
                 return False
         except Exception as e:
-            print(f"获取TOKEN异常❌: {e}")
+            print(f'{act_name}异常❌: {e}')
             return False
-
     def details(self):
-        Log(f"====== 获取用户信息 ======")
+        act_name = '获取用户信息'
+        Log(f"\n====== {act_name} ======")
         try:
             params = {}
             response = self.do_request('https://ump.ems.com.cn/memberCenterApiV2/member/details',data=params)
@@ -106,19 +109,19 @@ class RUN:
                 # print(response)
                 info = response.get('info', {})
                 phone = info.get('phone', '')
-                Log(f'>>获取用户信息成功✅')
+                Log(f'>>{act_name}成功✅')
                 Log(f'>用户ID：【{self.memberId}】\n手机号：【{phone}】')
                 return True
             else:
-                Log(f">获取TOKEN失败❌: {response}")
+                Log(f'{act_name}失败❌: {response}')
                 return False
         except Exception as e:
-            print(f"获取TOKEN异常❌: {e}")
+            print(f'{act_name}异常❌: {e}')
             return False
 
-
     def sign(self):
-        Log(f"====== 开始签到 ======")
+        act_name = '签到'
+        Log(f"\n====== {act_name} ======")
         try:
             params = {
                 "appId":"wx52872495fb375c4b",
@@ -130,21 +133,22 @@ class RUN:
             if response and response.get('code') == '000000':
                 # print(response)
                 info = response.get('info', {})
-                prizeSize = info.get('prizeSize', {})
-                Log(f'>签到成功✅获得：【{prizeSize}】积分')
+                prizeSize = info[0].get('prizeSize', {})
+                Log(f'>{act_name}成功✅>获得：【{prizeSize}】积分')
                 return True
             elif response and response.get('code') == '600001':
                 msg = response.get('msg')
-                Log(f'>签到失败❌ 【{msg}】')
+                Log(f'{act_name}失败❌:【{msg}】')
             else:
-                Log(f"签到失败❌: {response}")
+                Log(f'{act_name}失败❌: {response}')
                 return False
         except Exception as e:
-            print(f"登录验证异常❌: {e}")
+            print(f'{act_name}异常❌: {e}')
             return False
 
     def memberGoldsInfo(self):
-        Log(f"====== 获取积分信息 ======")
+        act_name = '获取积分信息'
+        Log(f"\n====== {act_name} ======")
         try:
             params = {}
             response = self.do_request('https://ump.ems.com.cn/memberCenterApiV2/golds/memberGoldsInfo',data=params)
@@ -155,12 +159,99 @@ class RUN:
                 Log(f'>当前积分：【{availableGoldsTotal}】')
                 return True
             else:
-                Log(f"获取积分信息失败❌: {response}")
+                Log(f'{act_name}失败❌: {response}')
                 return False
         except Exception as e:
-            print(f"获取积分信息异常❌: {e}")
+            print(f'{act_name}异常❌: {e}')
             return False
 
+    def receivePrize(self,prizeId):
+        act_name = '领取连签礼包'
+        Log(f"\n====== {act_name} ======")
+        try:
+            params = {
+                "activId": "d191dce0740849b1b7377e83c00475d6",
+                "appId": "wx52872495fb375c4b",
+                "openId": self.openId,
+                "userId": self.memberId,
+                "prizeId": prizeId
+            }
+            response = self.do_request('https://ump.ems.com.cn/activCenterApi/signActivInfo/receivePrize',data=params)
+            if response and response.get('code') == '000000':
+                Log(f'{act_name}成功✅')
+                return True
+            else:
+                Log(f'{act_name}失败❌: {response}')
+                return False
+        except Exception as e:
+            print(f'{act_name}异常❌: {e}')
+            return False
+
+    def queryPrizeIsReceive(self):
+        act_name = '查询签到礼包领取状态'
+        Log(f"\n====== {act_name} ======")
+        try:
+            params = {
+                "activId": "d191dce0740849b1b7377e83c00475d6",
+                "appId": "wx52872495fb375c4b",
+                "openId": self.openId,
+                "userId": self.memberId
+            }
+            response = self.do_request('https://ump.ems.com.cn/activCenterApi/signActivInfo/queryPrizeIsReceive',data=params)
+            if response and response.get('code') == '000000':
+                info = response.get('info',[{}])
+                Log(f'{act_name}成功✅')
+                if info != [{}]:
+                    for Id in info:
+                        prizeId = Id['prizeId']
+                        prizeReceiveStatus = Id['prizeReceiveStatus']
+                        if prizeReceiveStatus != 1:
+                            Log(f'有待领取礼包')
+                            self.receivePrize(prizeId)
+                        else:
+                            Log(f'暂无待领取礼包')
+                else:
+                    Log(f'暂无待领取礼包')
+                return True
+            else:
+                Log(f'{act_name}失败❌: {response}')
+                return False
+        except Exception as e:
+            print(f'{act_name}异常❌: {e}')
+            return False
+
+    def querySignDetail(self):
+        act_name = '获取签到详情'
+        Log(f"\n====== {act_name} ======")
+        try:
+            params = {
+                "appId": "wx52872495fb375c4b",
+                "userId": self.memberId,
+                "openId": self.openId,
+                "activId": 'd191dce0740849b1b7377e83c00475d6'
+            }
+            response = self.do_request('https://ump.ems.com.cn/activCenterApi/signActivInfo/querySignDetail',data=params)
+            if response and response.get('code') == '000000':
+                Log(f'{act_name}成功✅')
+                info = response.get('info', {})
+                signDay = info.get('signDay', '')
+                maxContiSignDay = info.get('maxContiSignDay', '')
+                signDayList = info.get('signDayList', {})
+                Log(f'>累计签到：【{signDay}】天')
+                Log(f'>已连续签到：【{maxContiSignDay}】天')
+                if date.today().strftime("%Y-%m-%d") not in signDayList:
+                    Log(f'>今日未签到')
+                    self.sign()
+                else:
+                    Log(f'>今日已签到✅')
+
+                return True
+            else:
+                Log(f'{act_name}失败❌: {response}')
+                return False
+        except Exception as e:
+            print(f'{act_name}异常❌: {e}')
+            return False
 
     def main(self):
         Log(f"\n开始执行第{self.index}个账号--------------->>>>>")
@@ -168,7 +259,8 @@ class RUN:
 
         if self.findByOpenIdAppId():
             self.details()
-            self.sign()
+            self.querySignDetail()
+            self.queryPrizeIsReceive()
             self.memberGoldsInfo()
             self.sendMsg()
             return True
@@ -244,7 +336,7 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
 ✨✨✨ @Author CHERWIN✨✨✨
 ''')
     local_script_name = os.path.basename(__file__)
-    local_version = '2024.05.15'
+    local_version = '2024.05.23'
     if IS_DEV:
         import_Tools()
     else:
