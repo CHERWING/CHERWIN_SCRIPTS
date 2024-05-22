@@ -131,9 +131,9 @@ class RUN:
             point = response.get('data')
             print(f'{act_name}成功！✅')
             if END:
-                Log(f'当前积分:【{point}】')
+                Log(f'执行后积分:【{data}】')
             else:
-                Log(f'执行后积分:【{point}】')
+                Log(f'当前积分:【{data}】')
             return True
         else:
             print(response)
