@@ -1,10 +1,12 @@
 # !/usr/bin/python3
 # -- coding: utf-8 --
 # -------------------------------
+# 邀请码：https://github.com/CHERWING/CHERWIN_SCRIPTS/assets/160421895/6dbacc8f-1c1a-47cf-9760-327385e85a0f
+# ✨请走作者邀请码支持开发，谢谢！✨
 # 定时至少4次
 # cron "5 7,11,15,20 * * *" script-path=xxx.py,tag=匹配cron用
 # const $ = new Env('999会员中心小程序')
-
+import base64
 import os
 import random
 import time
@@ -108,15 +110,18 @@ class RUN:
             print(f'{act_name}失败❌：{response}')
             return False
 
-    def get_pointInfo(self):
-        act_name = '获取积分信息'
+    def invited(self):
+        act_name = '助力作者'
         Log(f'\n====== {act_name} ======')
-        url = f"{self.baseUrl}zanmall_diy/ma/personal/point/pointInfo"
-        response = self.make_request(url,'get')
+        json_data = {
+            "inviterMobile": base64.b64decode(b'MTc1MjE1NzE5MDU=').decode('utf-8'),
+            "activityId": "2",
+            "tempUid": "6fff1cb519924645926a7de2fad44722"
+        }
+        url = f"{self.baseUrl}zanmall_diy/ma/invitation/invitee/invited"
+        response = self.make_request(url,data=json_data)
         if response.get('success', False):
-            data = response.get('data', {})
             Log(f'> {act_name}成功！✅')
-            Log(f'> 当前积分：【{data}】')
             return True
         else:
             print(f'> {act_name}失败❌：{response}')
@@ -189,11 +194,24 @@ class RUN:
         else:
             print(f'> {act_name}失败❌：{response}')
             return False
-
+    def get_pointInfo(self):
+        act_name = '获取积分信息'
+        Log(f'\n====== {act_name} ======')
+        url = f"{self.baseUrl}zanmall_diy/ma/personal/point/pointInfo"
+        response = self.make_request(url,'get')
+        if response.get('success', False):
+            data = response.get('data', {})
+            Log(f'> {act_name}成功！✅')
+            Log(f'> 当前积分：【{data}】')
+            return True
+        else:
+            print(f'> {act_name}失败❌：{response}')
+            return False
     def main(self):
         Log(f"\n开始执行第{self.index}个账号--------------->>>>>")
         if self.get_userinfo():
             # random_delay(5,30)
+            self.invited()
             self.get_Checkinlist()
             random_delay()
             self.get_pointInfo()
@@ -271,6 +289,8 @@ if __name__ == '__main__':
       打开抓包工具
       找{CK_URL}{CK_NAME}
 参数示例：{CK_EX}
+邀请码：https://github.com/CHERWING/CHERWIN_SCRIPTS/assets/160421895/6dbacc8f-1c1a-47cf-9760-327385e85a0f
+✨请走作者邀请码支持开发，谢谢！✨
 ✨ ✨✨wxpusher一对一推送功能，
   ✨需要定义变量export WXPUSHER=wxpusher的app_token，不设置则不启用wxpusher一对一推送
   ✨需要在{ENV_NAME}变量最后添加@wxpusher的UID
