@@ -122,33 +122,33 @@ class RUN:
             print(response)
             return False
 
-    def get_Point(self):
+    def get_Point(self,END=False):
         act_name = '获取积分信息'
-        Log(f'\n====== {act_name} ======')
+        if not END:Log(f'\n====== {act_name} ======')
         url = f"{self.baseUrl}point"
         response = self.make_request(url,method='get')
         if response.get('status', False):
             point = response.get('data')
             print(f'{act_name}成功！✅')
-            Log(f'当前积分:【{point}】')
+            if END:
+                Log(f'当前积分:【{point}】')
+            else:
+                Log(f'执行后积分:【{point}】')
             return True
         else:
             print(response)
             return False
 
-    def daily_sign(self,END=False):
+    def daily_sign(self):
         act_name = '签到'
-        if not END:Log(f'\n====== {act_name} ======')
+        Log(f'\n====== {act_name} ======')
         url = f"{self.baseUrl}daily/sign"
         response = self.make_request(url)
         if response.get('status', False):
             data = response.get('data',{})
             point = data.get('dailySign', {}).get('bonusPoint', '')
             print(f'{act_name}成功！✅')
-            if END:
-                Log(f'当前积分:【{point}】')
-            else:
-                Log(f'执行后积分:【{point}】')
+            Log(f'获得积分:【{point}】')
             return True
         else:
             print(response)
