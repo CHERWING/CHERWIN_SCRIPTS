@@ -131,9 +131,9 @@ class RUN:
             point = response.get('data')
             print(f'{act_name}成功！✅')
             if END:
-                Log(f'执行后积分:【{data}】')
+                Log(f'执行后积分:【{point}】')
             else:
-                Log(f'当前积分:【{data}】')
+                Log(f'当前积分:【{point}】')
             return True
         else:
             print(response)
@@ -146,9 +146,11 @@ class RUN:
         response = self.make_request(url)
         if response.get('status', False):
             data = response.get('data',{})
-            point = data.get('dailySign', {}).get('bonusPoint', '')
-            print(f'{act_name}成功！✅')
-            Log(f'获得积分:【{point}】')
+            dailySign = data.get('dailySign', None)
+            if dailySign != None:
+                point = dailySign.get('bonusPoint', '')
+                print(f'{act_name}成功！✅')
+                Log(f'获得积分:【{point}】')
             return True
         else:
             print(response)
@@ -189,6 +191,7 @@ class RUN:
             self.get_sign_status()
             random_delay()
             self.get_Point(True)
+
 
             self.sendMsg()
             return True
