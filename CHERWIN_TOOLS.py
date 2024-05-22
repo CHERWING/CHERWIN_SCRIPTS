@@ -350,8 +350,9 @@ def CHECK():
         CHERWIN_SCRIPT_CONFIG = response.json()
         if 'code' in CHERWIN_SCRIPT_CONFIG:
             CHERWIN_SCRIPT_CONFIG = None
-        server_version = CHERWIN_SCRIPT_CONFIG.get('TOOLS_VERSION', NOW_TOOLS_VERSION)
-        if CHECK_UPDATE_NEW(NOW_TOOLS_VERSION, server_version, server_script_url, TOOLS_NAME):
+        TOOLS_VERSION = CHERWIN_SCRIPT_CONFIG.get('TOOLS_VERSION', NOW_TOOLS_VERSION)
+        
+        if CHECK_UPDATE_NEW(NOW_TOOLS_VERSION, TOOLS_VERSION, server_script_url, TOOLS_NAME):
             print('更新脚本完成')
             # print(f'重新检测[{TOOLS_NAME}]版本')
             return False
