@@ -11,7 +11,7 @@ import requests
 from http import HTTPStatus
 from datetime import datetime
 
-NOW_TOOLS_VERSION = '2024.05.15'
+NOW_TOOLS_VERSION = '2024.05.23'
 if os.path.isfile('DEV_ENV.py'):
     import DEV_ENV
     IS_DEV = True
@@ -423,6 +423,30 @@ def TYQH_SIGN(parameters={}, body=None):
         'sign': sign
     }
     return sign_header
+
+def YDXQ_SIGN():
+    sign_nonce = "tnFWIEFpVPJkOuNX4zdsKeBEMIakLS1RsnS7cH0Id6MjEEBGO"
+    n = str(int(time.time()))
+    # 拼接字符串并使用md5哈希。注意在Python中，需要对字符串编码才能生成哈希。
+    sign_string = f"sign_{n}_sign{sign_nonce}"
+    sign_hash = hashlib.md5(sign_string.encode()).hexdigest()
+    return sign_hash, n
+
+def HXEK_SIGN(memberId):
+    appid = "wxa1f1fa3785a47c7d"
+    secret = 'damogic8888'
+    # 获取GMT+8的当前时间戳
+    timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    # timestamp = '2024-05-22 16:07:54'
+    # 生成随机数
+    random_int = random.randint(1000000, 9999999)
+    # random_int = 4270745
+    # 构建待加密字符串
+    raw_string = f"timestamp={timestamp}transId={appid}{timestamp}secret={secret}random={random_int}memberId={memberId}"
+    # 使用MD5进行加密
+    md5_hash = hashlib.md5(raw_string.encode())
+    sign = md5_hash.hexdigest()
+    return sign,random_int,timestamp
 
 def main(APP_NAME, local_script_name, ENV_NAME, local_version,need_invite=False):
     global APP_INFO, TIPS, TIPS_HTML
