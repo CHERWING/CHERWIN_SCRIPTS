@@ -188,7 +188,7 @@ class RUN:
             random_delay()
             self.get_sign_status()
             random_delay()
-            self.get_Point()
+            self.get_Point(True)
 
             self.sendMsg()
             return True
