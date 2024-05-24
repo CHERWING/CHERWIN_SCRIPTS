@@ -1187,7 +1187,7 @@ class RUN:
             print(e)
 
     def DRAGONBOAT_2024_index(self):
-        Log('====== 查询龙舟游戏状态 ======')
+        print('====== 查询龙舟活动状态 ======')
         invite_user_id = random.choice([invite for invite in inviteId if invite != self.user_id])
         try:
             self.headers['channel'] = 'newExpressWX'
@@ -1206,10 +1206,10 @@ class RUN:
                 # 比较当前时间是否小于比较时间
                 is_less_than = datetime.now() < comparison_time
                 if is_less_than:
-                    print('龙舟游戏活动进行中....')
+                    print('龙舟游动进行中....')
                     return True
                 else:
-                    print('龙舟游戏活动已结束')
+                    print('龙舟活动已结束')
                     return False
             else:
                 error_message = response.get('errorMessage', '无返回')
@@ -1222,7 +1222,7 @@ class RUN:
             return False
 
     def DRAGONBOAT_2024_Game_indexInfo(self):
-        print('====== 开始龙舟游戏 ======')
+        Log('====== 开始划龙舟游戏 ======')
         try:
             payload = {}
             url = 'https://mcs-mimp-web.sf-express.com/mcs-mimp/commonPost/~memberNonactivity~dragonBoat2024GameService~indexInfo'
@@ -1250,7 +1250,7 @@ class RUN:
             return False
 
     def DRAGONBOAT_2024_weeklyGiftStatus(self):
-        Log('====== 查询每周礼包领取状态 ======')
+        print('====== 查询每周礼包领取状态 ======')
         try:
             payload = {}
             url = 'https://mcs-mimp-web.sf-express.com/mcs-mimp/commonPost/~memberNonactivity~dragonBoat2024IndexService~weeklyGiftStatus'
@@ -1265,13 +1265,13 @@ class RUN:
                     receiveEndTime = gift['receiveEndTime']
                     print(f'>>> 领取时间：【{receiveStartTime} 至 {receiveEndTime}】')
                     if received:
-                        Log('> 该礼包已领取')
+                        print('> 该礼包已领取')
                         continue
                     receive_start_time = datetime.strptime(receiveStartTime, "%Y-%m-%d %H:%M:%S")
                     receive_end_time = datetime.strptime(receiveEndTime, "%Y-%m-%d %H:%M:%S")
                     is_within_range = receive_start_time <=  datetime.now() <= receive_end_time
                     if is_within_range:
-                        Log(f'>> 开始领取礼包：')
+                        print(f'>> 开始领取礼包：')
                         self.DRAGONBOAT_2024_receiveWeeklyGift()
             else:
                 error_message = response.get('errorMessage', '无返回')
@@ -1292,12 +1292,12 @@ class RUN:
             if response.get('success'):
                 obj =response.get('obj',[{}])
                 if obj == [{}]:
-                    Log('> 领取失败')
+                    print('> 领取失败')
                     return False
                 for gifts in obj:
                     productName = gifts['productName']
                     amount = gifts['amount']
-                    Log(f'> 领取【{productName} x {amount}】成功')
+                    print(f'> 领取【{productName} x {amount}】成功')
             else:
                 error_message = response.get('errorMessage', '无返回')
                 if '没有资格参与活动' in error_message:
@@ -1307,7 +1307,7 @@ class RUN:
             print(e)
 
     def DRAGONBOAT_2024_taskList(self):
-        Log('====== 查询推币任务列表 ======')
+        print('====== 查询推币任务列表 ======')
         try:
             payload = {
                 "activityCode": "DRAGONBOAT_2024",
@@ -1338,10 +1338,7 @@ class RUN:
             print(e)
 
     def DRAGONBOAT_2024_coinStatus(self,END = False):
-        if END :
-            Log('====== 查询金币信息 ======')
-        else:
-            print('====== 查询金币信息 ======')
+        Log('====== 查询金币信息 ======')
         # try:
         payload = {}
         url = 'https://mcs-mimp-web.sf-express.com/mcs-mimp/commonPost/~memberNonactivity~dragonBoat2024CoinService~coinStatus'
@@ -1358,17 +1355,14 @@ class RUN:
             if len(accountCurrencyList) > 1:
                 PUSH_TIMES_balance = accountCurrencyList[1]['balance']
                 Log(f'> 剩余推币次数：【{PUSH_TIMES_balance}】')
+            Log(f'> 当前金币：【{COIN_balance}】')
+            Log(f'> 今日推币：【{pushedTimesToday}】次')
+            Log(f'> 总推币：【{pushedTimesTotal}】次')
             if END:
-                Log(f'> 当前金币：【{COIN_balance}】')
-                Log(f'> 今日推币：【{pushedTimesToday}】次')
                 if pushedTimesTotal > 0:
                     for i in range(PUSH_TIMES_balance):
                         print(f'>> 开始第【{PUSH_TIMES_balance+1}】次推币')
                         self.DRAGONBOAT_2024_pushCoin()
-            else:
-                print(f'> 当前金币：【{COIN_balance}】')
-                print(f'> 今日推币：【{pushedTimesToday}】次')
-                print(f'> 总推币：【{pushedTimesTotal}】次')
         else:
             error_message = response.get('errorMessage', '无返回')
             if '没有资格参与活动' in error_message:
@@ -1424,7 +1418,7 @@ class RUN:
     def DRAGONBOAT_2024_win(self,level):
         try:
             for i in range(level,30):
-                Log(f'开始第【{i+1}】关')
+                print(f'开始第【{i+1}】关')
                 payload = {"levelIndex":i+1}
                 url = 'https://mcs-mimp-web.sf-express.com/mcs-mimp/commonPost/~memberNonactivity~dragonBoat2024GameService~win'
 
