@@ -1,19 +1,19 @@
 /**
  *
  * 项目名称：口味王小程序
- * 项目抓包：抓tls-xw.mengniu.cn下的memberId@memberUnionid填入变量
+ * 项目抓包：抓tls-xw.mengniu.cn下的memberId & memberUnionid填入变量
  * 项目变量：KWW
- * 项目定时：每天9，18,20
+ * 项目定时：每天9，18，20
  * cron: 0 9,18,20 * * *
  * github仓库：https://github.com/CHERWING/CHERWIN_SCRIPTS
  *
  */
 
 //===============脚本版本=================//
-let local_version = "2024.05.17";
+let local_version = "2024.05.24";
 //=======================================//
 const APP_NAME = '口味王小程序'
-const $ = new Env('口味王小程序');
+const $ = new Env(APP_NAME);
 const ENV_NAME = 'KWW'
 
 const notify = $.isNode() ? require('./sendNotify') : '';
@@ -79,6 +79,12 @@ let pointRain_activityStatus = true
 let QGY_inviteCode = []
 let AuthorinviteCode= ['IDTCLG','7LUL2L','BZZWJJ']
 let AuthorCid = ['4116743840','4094106667','4093679412']
+let QGY_canSteal = []
+let TYT_URL = ''
+let Jump_creditsCostId=''
+let Jump_startId=''
+let Jump_costResult = false
+let Jump_PKstatus = false
 console.log('✨✨✨ 口味王会员中心小程序签到✨✨✨\n' +
     '✨ 功能：\n' +
     '      积分签到\n' +
@@ -138,7 +144,7 @@ UserCookieArr = ENV_SPLIT(UserCookie)
             unionid = split_info[1];
             let len_split_info = split_info.length
             let last_info = split_info[len_split_info - 1]
-
+            // await DO_Jump()
             taskBeforeScore = 0;
             await start();
             await $.wait(2000);
@@ -151,10 +157,12 @@ UserCookieArr = ENV_SPLIT(UserCookie)
             await $.wait(2000);
             // await activeTaskFlag(2 * 1000)
             await DO_QGY(num);
-            await $.wait(2000);
-            await DO_FKP();
+            // await $.wait(2000);
+            // await DO_FKP();已结束
+            // await $.wait(5000);
+            // await DO_PointRain();已结束
             await $.wait(5000);
-            await DO_PointRain();
+            await DO_Jump();
             //log(`\n==== 积分查询 ====\n`)
             await getMemberScore();
 
@@ -168,29 +176,29 @@ UserCookieArr = ENV_SPLIT(UserCookie)
             }
             await $.wait(3000);
         }
-        for (let index = 0; index < UserCookieArr.length; index++) {
-            one_msg = ''
-            let send_UID = ''
-            let num = index + 1
-            Log(`\n================ 开始第 【${num}】 个账号本地互助 -------->>>>>\n`)
-            await $.wait(await delay());
-            let split_info = UserCookieArr[index].split("@")
-            memberId = split_info[0];
-            unionid = split_info[1];
-            let len_split_info = split_info.length
-            let last_info = split_info[len_split_info - 1]
-
-            await QGY_help(num)
-            console.log('\n====== 开始一对一推送 ======')
-            if (len_split_info > 0 && last_info.includes("UID_")) {
-                console.log(`>检测到设置了UID:【${last_info}】✅`);
-                send_UID = last_info
-                await send_wxpusher(send_UID,one_msg,APP_NAME);
-            }else{
-                Log('>未检测到wxpusher UID，不执行一对一推送❌')
-            }
-            await $.wait(5000);
-        }
+        // for (let index = 0; index < UserCookieArr.length; index++) {
+        //     one_msg = ''
+        //     let send_UID = ''
+        //     let num = index + 1
+        //     Log(`\n================ 开始第 【${num}】 个账号本地互助 -------->>>>>\n`)
+        //     await $.wait(await delay());
+        //     let split_info = UserCookieArr[index].split("@")
+        //     memberId = split_info[0];
+        //     unionid = split_info[1];
+        //     let len_split_info = split_info.length
+        //     let last_info = split_info[len_split_info - 1]
+        //
+        //     await QGY_help(num)
+        //     console.log('\n====== 开始一对一推送 ======')
+        //     if (len_split_info > 0 && last_info.includes("UID_")) {
+        //         console.log(`>检测到设置了UID:【${last_info}】✅`);
+        //         send_UID = last_info
+        //         await send_wxpusher(send_UID,one_msg,APP_NAME);
+        //     }else{
+        //         Log('>未检测到wxpusher UID，不执行一对一推送❌')
+        //     }
+        //     await $.wait(5000);
+        // }
         Log(APP_CONFIG['GLOBAL_NTC'])
         await SendMsg(msg);
 
@@ -731,7 +739,7 @@ async function DO_QGY(num) {
             qgyToken = dealToken(tokenStr, tokenKeyStr);
             await qgySign(baseUrl, qgyToken);
 
-            if(energyNum == upNeedNum){
+            if(upNeedNum==null || upNeedNum==0){
                 await getTokenStr(baseUrl);
                 await $.wait(2000);
                 qgyToken = dealToken(tokenStr, tokenKeyStr);
@@ -869,6 +877,20 @@ async function DO_QGY(num) {
     } else {
         console.log('>您还是先去种植把！❌')
     }
+    await qgyFriendList(baseUrl)
+    if (QGY_canSteal.length >0){
+        for(var i=0;i<QGY_canSteal.length;i++){
+            await getTokenKeyStr(baseUrl);
+            await $.wait(2000);
+            await getTokenStr(baseUrl);
+            await $.wait(2000);
+            qgyToken = dealToken(tokenStr, tokenKeyStr);
+            var cid = QGY_canSteal[i]
+            await qgySteal(qgyToken,cid)
+        }
+        await $.wait(2000);
+    }
+
     return true;
 }
 
@@ -993,7 +1015,7 @@ async function qgyCheckQuery(baseUrl) {
     })
 }
 /**
- * 青果园签到检查
+ * 青果园助力
  * @returns {Promise<unknown>}
  */
 async function qgyInviteAssist(baseUrl,token,inviteCode) {
@@ -1037,6 +1059,105 @@ async function qgyInviteAssist(baseUrl,token,inviteCode) {
                 }
             } catch (e) {
                 console.log(`>助力异常❌：${JSON.stringify(data)}，原因：${e}`)
+            }
+        }).catch(function (error) {
+            console.error(error);
+        }).then(res => {
+            //这里处理正确返回
+            resolve();
+        });
+    })
+}
+async function qgyFriendList(baseUrl) {
+    console.log('====== 获取好友列表 ======')
+    qgySignFlag = false;
+    return new Promise((resolve) => {
+        var url = baseUrl + 'main/friendRank.do';
+        var host = (url.split('//')[1]).split('/')[0];
+        var options = {
+            method: 'GET',
+            url: url,
+            params: {user_type:1,is_from_share:1,_t: timestampMs()},
+            headers: {
+                cookie: gameCookie,
+                Host: host,
+                'user-sign': getUserSign(memberId, timestamp, trandom).toLowerCase(),
+                'user-timestamp': timestamp,
+                'user-random': trandom,
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Connection: 'keep-alive',
+                Accept: '*/*',
+                'User-Agent': getUA(),
+                Referer: qgyUrl + '&from=login&spm=89420.1.1.1',
+                'Accept-Language': 'zh-CN,zh-Hans;q=0.9',
+            },
+            data: {}
+        };
+        axios.request(options).then(function (response) {
+            try {
+                var data = response.data;
+                if(data.success){
+                    var rankList = data.data.rankList
+                    for (var i=0;i>rankList.length;i++){
+                        var canSteal = rankList[i]['rankList']
+                        var cid = rankList[i]['cid']
+                        var nickname = rankList[i]['nickname']
+                        if (canSteal==true){
+                            console.log(`好友：【${nickname}】】可偷取`)
+                            QGY_canSteal.push(cid)
+                        }
+                    }
+                }else{
+                    console.log(`>获取好友列表失败！`)
+
+                }
+            } catch (e) {
+                console.log(`>获取好友列表异常❌：${JSON.stringify(data)}，原因：${e}`)
+            }
+        }).catch(function (error) {
+            console.error(error);
+        }).then(res => {
+            //这里处理正确返回
+            resolve();
+        });
+    })
+}
+async function qgySteal(baseUrl,token,cid) {
+    console.log('====== 偷取好友能量 ======')
+    qgySignFlag = false;
+    return new Promise((resolve) => {
+        var url = baseUrl + 'main/steal.do';
+        var host = (url.split('//')[1]).split('/')[0];
+        var options = {
+            method: 'GET',
+            url: url,
+            params: {token:token,cid:cid,user_type:1,is_from_share:1,_t: timestampMs()},
+            headers: {
+                cookie: gameCookie,
+                Host: host,
+                'user-sign': getUserSign(memberId, timestamp, trandom).toLowerCase(),
+                'user-timestamp': timestamp,
+                'user-random': trandom,
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Connection: 'keep-alive',
+                Accept: '*/*',
+                'User-Agent': getUA(),
+                Referer: qgyUrl + '&from=login&spm=89420.1.1.1',
+                'Accept-Language': 'zh-CN,zh-Hans;q=0.9',
+            },
+            data: {}
+        };
+        axios.request(options).then(function (response) {
+            try {
+                var data = response.data;
+                if(data.success){
+                    var num = data.data.num
+                    Log(`>偷取好友成功，获得：【${num}】青果`)
+                }else{
+                    console.log(`>偷取好友列表失败！`)
+                }
+            } catch (e) {
+                console.log(`>偷取好友异常❌：${JSON.stringify(data)}，原因：${e}`)
             }
         }).catch(function (error) {
             console.error(error);
@@ -1199,7 +1320,6 @@ async function getMrYdUrl() {
         });
     })
 }
-
 /**
  * 获取其他地址
  * @returns {Promise<unknown>}
@@ -1253,8 +1373,6 @@ async function getOtherUrl() {
         });
     })
 }
-
-
 /**
  * 翻牌次数查询
  * @returns {Promise<unknown>}
@@ -1409,7 +1527,6 @@ async function fkp_draw(baseUrl,token) {
  * 获取翻卡牌html
  * @returns {Promise<unknown>}
  */
-
 async function getFKPHtml() {
     return new Promise((resolve) => {
         var url = FKP_URL + '&from=login&spm=89420.1.1.1';
@@ -1443,8 +1560,6 @@ async function getFKPHtml() {
         });
     })
 }
-
-
 /**
  * 找爱游戏
  * @returns {Promise<unknown>}
@@ -1499,8 +1614,6 @@ async function loveGame_gameIndex(baseUrl,Token) {
         });
     })
 }
-
-
 /**
  * 找爱游戏
  * @returns {Promise<unknown>}
@@ -1553,7 +1666,6 @@ async function loveGame_startGame(baseUrl,Token) {
         });
     })
 }
-
 /**
  * 找爱游戏
  * @returns {Promise<unknown>}
@@ -1613,7 +1725,6 @@ async function loveGame_submitGame(baseUrl,Token) {
         });
     })
 }
-
 async function pointRain_gameIndex(baseUrl,Token) {
     console.log('====== 访问积分雨活动页 ======')
     return new Promise((resolve) => {
@@ -1709,7 +1820,6 @@ async function pointRain_startGame(baseUrl,Token) {
         });
     })
 }
-
 /**
  * 找爱游戏
  * @returns {Promise<unknown>}
@@ -1762,8 +1872,6 @@ async function pointRain_submitGame(baseUrl,Token) {
         });
     })
 }
-
-
 async function DO_FKP(num) {
     console.log('\n--------------------开始翻卡牌活动----------------------')
     FKP_URL= 'https://89420.activity-20.m.duiba.com.cn/projectx/p9027e011/index.html?appID=89420'
@@ -1841,8 +1949,6 @@ async function DO_FKP(num) {
 
 
 }
-
-
 async  function DO_PointRain(){
     console.log('\n--------------------开始积分雨活动----------------------')
     JFY_URL= 'https://89420.activity-20.m.duiba.com.cn/projectx/p03c58ec7/index.html?appID=89420'
@@ -1892,6 +1998,363 @@ async  function DO_PointRain(){
 
 
 }
+
+async  function DO_Jump(){
+    console.log('\n--------------------开始跳一跳游戏----------------------')
+    TYT_URL= 'https://89420.activity-20.m.duiba.com.cn/projectx/p60459935/index.html?appID=89420'
+    let urlMatch = TYT_URL.match('([^/]+)/?$');
+    let baseUrl = TYT_URL.replace(urlMatch[0], '');
+    // console.log(baseUrl)
+    await loginFreePlugin(TYT_URL);
+    await $.wait(3000)
+    if (loginUrl == "") {
+        Log(`账号【${num}】登录跳一跳异常❌，自动跳过任务！`);
+        return false;
+    }
+    await setCookies();
+    await $.wait(3000);
+    if (gameCookie == "") {
+        Log(`账号【${num}】跳一跳cookies异常❌，自动跳过任务！`);
+        return false;
+    }
+
+    await $.wait(2000);
+    await Jump_creditsCost(baseUrl)
+    if (Jump_creditsCostId != ''){
+        await $.wait(2000);
+        await Jump_queryStatus(baseUrl,Jump_creditsCostId)
+        if (Jump_costResult == true){
+            await $.wait(2000);
+            await getTokenKeyStr(baseUrl);
+            await getTokenStr(baseUrl);
+            await Jump_start(baseUrl,dealToken(tokenStr, tokenKeyStr),Jump_creditsCostId)
+            if (Jump_startId != ''){
+
+                while (Jump_PKstatus == false){
+                    await Jump_queryPkStatus(baseUrl,Jump_startId)
+                    await $.wait(1000);
+                }
+
+            console.log('等待30秒提交分数')
+            await $.wait(1000*30);
+            await getTokenStr(baseUrl);
+            await Jump_submit(baseUrl,dealToken(tokenStr, tokenKeyStr))
+
+            }
+
+
+
+
+
+
+        }
+    }
+
+}
+
+async function Jump_creditsCost(baseUrl) {
+    console.log('====== 开始创建跳一跳订单 ======')
+    return new Promise((resolve) => {
+        var url = baseUrl + 'credits/creditsCost.do';
+        var host = (url.split('//')[1]).split('/')[0];
+        var options = {
+            method: 'GET',
+            url: url,
+            // token=p7f4e9c7&user_type=1&is_from_share=1&_t=1715620488721
+            params: {
+                toPlaywayId: 'matching',
+                toActionId: 'start',
+                credits: 10,
+                desc: 'sub_credits_desc',
+                user_type: 1,
+                is_from_share:1,
+                _t: timestampMs()
+            },
+            headers: {
+                cookie: gameCookie,
+                Host: host,
+                'user-sign': getUserSign(memberId, timestamp, trandom).toLowerCase(),
+                'user-timestamp': timestamp,
+                'user-random': trandom,
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Connection: 'keep-alive',
+                Accept: '*/*',
+                'User-Agent': getUA(),
+                Referer: TYT_URL + '&from=login&spm=89420.1.1.1',
+                'Accept-Language': 'zh-CN,zh-Hans;q=0.9',
+            },
+            data: {
+            }
+        };
+        axios.request(options).then(function (response) {
+
+            try {
+                var data = response.data;
+                // console.log(data)
+                if (data.success) {
+                    Jump_creditsCostId = data.data
+                    console.log(`获取订单ID成功：${Jump_creditsCostId}`)
+                }
+
+
+            } catch (e) {
+                console.log(`获取游戏ID失败: ❌ , 状态异常：${JSON.stringify(data)}，原因：${e}`)
+            }
+        }).catch(function (error) {
+            console.error(error);
+        }).then(res => {
+            //这里处理正确返回
+            resolve();
+        });
+    })
+}
+
+async function Jump_queryStatus(baseUrl,ticketNum) {
+    console.log('====== 开始提交跳一跳订单 ======')
+    return new Promise((resolve) => {
+        var url = baseUrl + 'credits/queryStatus.do';
+        var host = (url.split('//')[1]).split('/')[0];
+        var options = {
+            method: 'GET',
+            url: url,
+            // credits/queryStatus.do?ticketNum=p604599358ef4ba9928d241ed278c33e&user_type=1&is_from_share=1&_t=1716222238997
+            params: {
+                ticketNum: ticketNum,
+                user_type: 1,
+                is_from_share:1,
+                _t: timestampMs()
+            },
+            headers: {
+                cookie: gameCookie,
+                Host: host,
+                'user-sign': getUserSign(memberId, timestamp, trandom).toLowerCase(),
+                'user-timestamp': timestamp,
+                'user-random': trandom,
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Connection: 'keep-alive',
+                Accept: '*/*',
+                'User-Agent': getUA(),
+                Referer: TYT_URL + '&from=login&spm=89420.1.1.1',
+                'Accept-Language': 'zh-CN,zh-Hans;q=0.9',
+            },
+            data: {
+            }
+        };
+        axios.request(options).then(function (response) {
+            try {
+                var data = response.data;
+                console.log(data)
+                if (data.success) {
+                    console.log(`订单成功`)
+                    Jump_costResult = true
+
+                }else{
+                    console.log(`订单失败❌`)
+                    Jump_costResult = false
+                }
+            } catch (e) {
+                console.log(`获取游戏ID失败: ❌ , 状态异常：${JSON.stringify(data)}，原因：${e}`)
+                Jump_costResult = false
+            }
+        }).catch(function (error) {
+            console.error(error);
+        }).then(res => {
+            //这里处理正确返回
+            resolve();
+        });
+    })
+}
+
+async function Jump_start(baseUrl,token,ticketNum) {
+    console.log('====== 开始跳一跳游戏 ======')
+    return new Promise((resolve) => {
+        var url = baseUrl + 'matching/start.do';
+        var host = (url.split('//')[1]).split('/')[0];
+        var options = {
+            method: 'GET',
+            url: url,
+            // matching/start.do?ticketNum=p604599358ef4ba9928d241ed278c33e&token=pc5f12d2&user_type=1&is_from_share=1&_t=1716222239241
+            params: {
+                ticketNum: ticketNum,
+                user_type: 1,
+                token: token,
+                is_from_share:1,
+                _t: timestampMs()
+            },
+            headers: {
+                cookie: gameCookie,
+                Host: host,
+                'user-sign': getUserSign(memberId, timestamp, trandom).toLowerCase(),
+                'user-timestamp': timestamp,
+                'user-random': trandom,
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Connection: 'keep-alive',
+                Accept: '*/*',
+                'User-Agent': getUA(),
+                Referer: TYT_URL + '&from=login&spm=89420.1.1.1',
+                'Accept-Language': 'zh-CN,zh-Hans;q=0.9',
+            },
+            data: {
+            }
+        };
+        axios.request(options).then(function (response) {
+            try {
+                var data = response.data;
+                console.log(data)
+                if (data.success) {
+                    Jump_startId = data.data.startId
+                    console.log(`开始跳一跳游戏成功,ID:【${Jump_startId}】`)
+                    return true
+                }else{
+                    console.log(`开始跳一跳游戏失败❌`)
+                    return false
+                }
+            } catch (e) {
+                console.log(`开始跳一跳游戏失败: ❌ , 状态异常：${JSON.stringify(data)}，原因：${e}`)
+                return false
+            }
+        }).catch(function (error) {
+            console.error(error);
+        }).then(res => {
+            //这里处理正确返回
+            resolve();
+        });
+    })
+}
+
+async function Jump_queryPkStatus(baseUrl,startId) {
+    console.log('====== 开始匹配对手 ======')
+    return new Promise((resolve) => {
+        var url = baseUrl + 'matching/queryPkStatus.do';
+        var host = (url.split('//')[1]).split('/')[0];
+        var options = {
+            method: 'GET',
+            url: url,
+            // https://89420.activity-20.m.duiba.com.cn/projectx/p60459935/matching/queryPkStatus.do?startId=4116743840_1716231400126&user_type=1&is_from_share=1&_t=1716231389780
+            params: {
+                startId: startId,
+                user_type: 1,
+                is_from_share:1,
+                _t: timestampMs()
+            },
+            headers: {
+                cookie: gameCookie,
+                Host: host,
+                'user-sign': getUserSign(memberId, timestamp, trandom).toLowerCase(),
+                'user-timestamp': timestamp,
+                'user-random': trandom,
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Connection: 'keep-alive',
+                Accept: '*/*',
+                'User-Agent': getUA(),
+                Referer: TYT_URL + '&from=login&spm=89420.1.1.1',
+                'Accept-Language': 'zh-CN,zh-Hans;q=0.9',
+            },
+            data: {
+            }
+        };
+        axios.request(options).then(function (response) {
+            try {
+                var data = response.data;
+                console.log(data)
+                if (data.success) {
+                    if (data.data.status == '2'){
+                        console.log(`匹配对手成功,`)
+                        Jump_PKstatus = true
+                        return true
+                    }else{
+                        console.log(`匹配对手失败❌`)
+                        Jump_PKstatus = false
+                    }
+
+                }else{
+                    console.log(`匹配对手失败❌`)
+                    Jump_PKstatus = false
+                    return false
+                }
+            } catch (e) {
+                console.log(`开始跳一跳游戏失败: ❌ , 状态异常：${JSON.stringify(data)}，原因：${e}`)
+                Jump_PKstatus = false
+                return false
+            }
+        }).catch(function (error) {
+            console.error(error);
+        }).then(res => {
+            //这里处理正确返回
+            resolve();
+        });
+    })
+}
+
+
+async function Jump_submit(baseUrl,startId) {
+    console.log('====== 开始跳一跳游戏 ======')
+    return new Promise((resolve) => {
+        var url = baseUrl + 'matching/submit.do';
+        var host = (url.split('//')[1]).split('/')[0];
+        var currScore = randomInt(350, 400)
+        // startId+currScore+'1'+timestampMs()+'duibatiaoyitiao'
+        t = timestampMs()
+        var sign = MD5Encrypt(`${startId}${currScore}1${t}duibatiaoyitiao`)
+        console.log(`签名数据：【${startId}${currScore}1${timestampMs()}duibatiaoyitiao】`)
+        console.log(`SIGN：【${sign}】`)
+        var options = {
+            method: 'POST',
+            url: url,
+            // matching/start.do?ticketNum=p604599358ef4ba9928d241ed278c33e&token=pc5f12d2&user_type=1&is_from_share=1&_t=1716222239241
+            params: {
+                _t: t
+            },
+            headers: {
+                cookie: gameCookie,
+                Host: host,
+                'user-sign': getUserSign(memberId, t, trandom).toLowerCase(),
+                'user-timestamp': t,
+                'user-random': trandom,
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Connection: 'keep-alive',
+                Accept: '*/*',
+                'User-Agent': getUA(),
+                Referer: TYT_URL + '&from=login&spm=89420.1.1.1',
+                'Accept-Language': 'zh-CN,zh-Hans;q=0.9',
+            },
+            data: {
+                startId: startId,
+                score: currScore,
+                type: 1,
+                timestamp: t,
+                sign: sign,
+                token: 1,
+                user_type: 1,
+                is_from_share:1
+            }
+        };
+        axios.request(options).then(function (response) {
+            try {
+                var data = response.data;
+                console.log(data)
+                // if (data.success) {
+                //     Jump_startId = data.data.startId
+                //     console.log(`开始跳一跳游戏成功,ID:【${Jump_startId}】`)
+                //     return true
+                // }else{
+                //     console.log(`开始跳一跳游戏失败❌`)
+                //     return false
+                // }
+            } catch (e) {
+                console.log(`开始跳一跳游戏失败: ❌ , 状态异常：${JSON.stringify(data)}，原因：${e}`)
+                return false
+            }
+        }).catch(function (error) {
+            console.error(error);
+        }).then(res => {
+            //这里处理正确返回
+            resolve();
+        });
+    })
+}
+
+
 
 /**
  * 获取
@@ -2042,12 +2505,12 @@ async function feed(baseUrl, token) {
 async function collectCoconut(baseUrl, token) {
     console.log('====== 果园收取青果 ======')
     return new Promise((resolve) => {
-        var url = baseUrl + 'game/collectCoconut.do';
+        var url = baseUrl + '/main/charge.do';
         var host = (url.split('//')[1]).split('/')[0];
         var options = {
             method: 'POST',
             url: url,
-            params: {_t: timestampMs()},
+            params: {token:token,user_type:1,is_from_share:1,_t: timestampMs()},
             headers: {
                 cookie: gameCookie,
                 Host: host,
@@ -2060,16 +2523,12 @@ async function collectCoconut(baseUrl, token) {
                 'Accept-Language': 'zh-CN,zh-Hans;q=0.9'
             },
             data: {
-                token: token,
-                user_type: '1',
-                is_from_share: '1',
-                _t: timestampMs()
             }
         };
         axios.request(options).then(function (response) {
             try {
                 var data = response.data;
-                Log(`>收取青果成功✅：${data.data.quantity}`)
+                Log(`>收取青果成功✅`)
             } catch (e) {
                 console.log(`>收取青果失败❌ ，原因：${data.message}`)
             }
