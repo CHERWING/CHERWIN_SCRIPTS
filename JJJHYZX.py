@@ -12,12 +12,7 @@ import random
 import time
 from datetime import datetime, time as times
 import requests
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
-# import CHERWIN_TOOLS
-# 禁用安全请求警告
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-#
 IS_DEV = False
 if os.path.isfile('DEV_ENV.py'):
     import DEV_ENV
@@ -112,7 +107,7 @@ class RUN:
 
     def invited(self):
         act_name = '助力作者'
-        Log(f'\n====== {act_name} ======')
+        # print(f'\n====== {act_name} ======')
         json_data = {
             "inviterMobile": base64.b64decode(b'MTc1MjE1NzE5MDU=').decode('utf-8'),
             "activityId": "2",
@@ -121,10 +116,10 @@ class RUN:
         url = f"{self.baseUrl}zanmall_diy/ma/invitation/invitee/invited"
         response = self.make_request(url,data=json_data)
         if response.get('success', False):
-            Log(f'> {act_name}成功！✅')
+            # print(f'> {act_name}成功！✅')
             return True
         else:
-            print(f'> {act_name}失败❌：{response}')
+            # print(f'> {act_name}失败❌：{response}')
             return False
 
     def get_Checkinlist(self):
@@ -302,7 +297,7 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
 ✨✨✨ @Author CHERWIN✨✨✨
 ''')
     local_script_name = os.path.basename(__file__)
-    local_version = '2024.05.22'
+    local_version = '2024.05.24'
     if IS_DEV:
         import_Tools()
     else:
