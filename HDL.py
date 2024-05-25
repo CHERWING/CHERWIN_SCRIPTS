@@ -5,7 +5,7 @@
 # ✨✨✨ @Author CHERWIN✨✨✨
 # -------------------------------
 # cron "0 6 * * *" script-path=xxx.py,tag=匹配cron用
-# const $ = new Env('中通快递小程序签到')
+# const $ = new Env('海底捞小程序签到')
 
 import os
 from os import path
