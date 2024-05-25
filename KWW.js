@@ -13,7 +13,7 @@
 let local_version = "2024.05.24";
 //=======================================//
 const APP_NAME = '口味王小程序'
-const $ = new Env(APP_NAME);
+const $ = new Env('口味王小程序');
 const ENV_NAME = 'KWW'
 
 const notify = $.isNode() ? require('./sendNotify') : '';
