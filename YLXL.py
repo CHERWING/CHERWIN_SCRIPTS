@@ -1,7 +1,7 @@
 # !/usr/bin/python3
 # -- coding: utf-8 --
 #  （包含：甄稀冰淇淋，金典SATINE、活力伊利）
-# cron "5 8 * * *" script-path=xxx.py,tag=匹配cron用
+# cron "5 9 * * *" script-path=xxx.py,tag=匹配cron用
 # const $ = new Env('伊利系列小程序')
 import json
 import os
@@ -107,13 +107,16 @@ class RUN:
             print(f'{act_name}成功！✅')
             site = {'1520': "活力伊利", '1160': '金典SATINE', '1068': '甄稀冰淇淋'}
             registerSource = response.get('data')['registerSource']
-            siteName = site[registerSource]
-            Log(f'当前小程序：【{siteName}】')
+            Log(f'当前Source：【{registerSource}】')
+            siteName = site.get(registerSource,False)
+            if not siteName:
+                Log(f'当前小程序暂不支持，请检查抓token的小程序是否在以下列表：【{site}】')
+                return False
+            Log(f'当前token所属小程序：【{siteName}】')
             nickName = response.get('data')['nickName']
             mobile = response.get('data')['mobile']
             mobile = mobile[:3] + "*" * 4 + mobile[7:]
             Log(f">用户名：{nickName}\n>手机号：{mobile}")
-
             return True
         elif not response:
             print(f">账号 {self.index}: ck过期 请重新抓取 access-token")
@@ -274,11 +277,11 @@ if __name__ == '__main__':
 export {ENV_NAME}='{CK_NAME}参数值'多账号#或&分割
 export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
 ✨ ✨ 注意：抓完CK没事儿别打开小程序，重新打开小程序请重新抓包
-✨ 推荐cron：5 7,11,15,20 * * *
+✨ 推荐cron：5 9 * * *
 ✨✨✨ @Author CHERWIN✨✨✨
 ''')
     local_script_name = os.path.basename(__file__)
-    local_version = '2024.05.23'
+    local_version = '2024.05.26'
     if IS_DEV:
         import_Tools()
     else:
