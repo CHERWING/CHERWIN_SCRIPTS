@@ -165,8 +165,8 @@ class RUN:
         datas = {
             "categoryId": 0,
             "sort": 0,
-            "pageNum": 10,
-            "pageSize": 1
+            "pageNum": 1,
+            "pageSize": 10
         }
         data.update(datas)
         # print(data)
