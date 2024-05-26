@@ -77,6 +77,8 @@ class RUN:
         self.login_res = self.login(url)
         self.today = datetime.now().strftime('%Y-%m-%d')
         self.answer = APP_INFO.get('ANSWER', []).get(self.today, False)
+        self.max_level = 8
+        self.packet_threshold = 1 << (self.max_level - 1)
 
     def get_deviceId(self, characters='abcdef0123456789'):
         result = ''
@@ -990,6 +992,7 @@ class RUN:
             print('未到自动抽奖时间')
 
     def member_day_index(self):
+        print('====== 会员日活动 ======')
         try:
             invite_user_id = random.choice([invite for invite in inviteId if invite != self.user_id])
             payload = {'inviteUserId': invite_user_id}
@@ -1136,10 +1139,10 @@ class RUN:
 
             response = self.do_request(url, payload)
             if response.get('success'):
-                Log(f'会员日领取{hour}点红包成功')
+                print(f'会员日领取{hour}点红包成功')
             else:
                 error_message = response.get('errorMessage', '无返回')
-                Log(f'会员日领取{hour}点红包失败: {error_message}')
+                print(f'会员日领取{hour}点红包失败: {error_message}')
                 if '没有资格参与活动' in error_message:
                     self.member_day_black = True
                     Log('会员日任务风控')
@@ -1155,7 +1158,32 @@ class RUN:
                 packet_list = response.get('obj', {}).get('packetList', [])
                 for packet in packet_list:
                     self.member_day_red_packet_map[packet['level']] = packet['count']
-                # Rest of the logic to process packet list
+
+                for level in range(1, self.max_level):
+                    count = self.member_day_red_packet_map.get(level, 0)
+                    while count >= 2:
+                        self.member_day_red_packet_merge(level)
+                        count -= 2
+                packet_summary = []
+                remaining_needed = 0
+
+                for level, count in self.member_day_red_packet_map.items():
+                    if count == 0:
+                        continue
+                    packet_summary.append(f"[{level}级]X{count}")
+                    int_level = int(level)
+                    if int_level < self.max_level:
+                        remaining_needed += 1 << (int_level - 1)
+
+                Log("会员日合成列表: " + ", ".join(packet_summary))
+
+                if self.member_day_red_packet_map.get(self.max_level):
+                    Log(f"会员日已拥有[{self.max_level}级]红包X{self.member_day_red_packet_map[self.max_level]}")
+                    self.member_day_red_packet_draw(self.max_level)
+                else:
+                    remaining = self.packet_threshold - remaining_needed
+                    Log(f"会员日距离[{self.max_level}级]红包还差: [1级]红包X{remaining}")
+
             else:
                 error_message = response.get('errorMessage', '无返回')
                 Log(f'查询会员日合成失败: {error_message}')
@@ -1167,6 +1195,8 @@ class RUN:
 
     def member_day_red_packet_merge(self, level):
         try:
+            # for key,level in enumerate(self.member_day_red_packet_map):
+            #     pass
             payload = {'level': level, 'num': 2}
             url = 'https://mcs-mimp-web.sf-express.com/mcs-mimp/commonPost/~memberNonactivity~memberDayPacketService~redPacketMerge'
 
@@ -1186,6 +1216,23 @@ class RUN:
         except Exception as e:
             print(e)
 
+    def member_day_red_packet_draw(self, level):
+        try:
+            payload = {'level': str(level)}
+            url = 'https://mcs-mimp-web.sf-express.com/mcs-mimp/commonPost/~memberNonactivity~memberDayPacketService~redPacketDraw'
+            response = self.do_request(url, payload)
+            if response and response.get('success'):
+                coupon_names = [item['couponName'] for item in response.get('obj', [])] or []
+
+                Log(f"会员日提取[{level}级]红包: {', '.join(coupon_names) or '空气'}")
+            else:
+                error_message = response.get('errorMessage') if response else "无返回"
+                Log(f"会员日提取[{level}级]红包失败: {error_message}")
+                if "没有资格参与活动" in error_message:
+                    self.memberDay_black = True
+                    print("会员日任务风控")
+        except Exception as e:
+            print(e)
     def DRAGONBOAT_2024_index(self):
         print('====== 查询龙舟活动状态 ======')
         invite_user_id = random.choice([invite for invite in inviteId if invite != self.user_id])
@@ -1487,6 +1534,7 @@ class RUN:
         #获取任务列表并执行任务
         self.get_honeyTaskListStart()
         self.honey_indexData(True)
+
         # #######################################
         # # # 获取当前季度结束日期
         # # activity_end_date = get_quarter_end_date()
@@ -1500,10 +1548,11 @@ class RUN:
         # # else:
         # #     print('周年庆活动已结束')
         # #######################################
-        self.member_day_index()
+        # self.member_day_index()
         current_date = datetime.now().day
         if 26 <= current_date <= 28:
             self.member_day_index()
+
         else:
             print('未到指定时间不执行会员日任务')
 
