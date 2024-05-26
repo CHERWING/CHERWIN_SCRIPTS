@@ -162,7 +162,7 @@ UserCookieArr = ENV_SPLIT(UserCookie)
             // await $.wait(5000);
             // await DO_PointRain();已结束
             await $.wait(5000);
-            await DO_Jump();
+            //await DO_Jump();
             //log(`\n==== 积分查询 ====\n`)
             await getMemberScore();
 
