@@ -11,7 +11,7 @@ import requests
 from http import HTTPStatus
 from datetime import datetime
 
-NOW_TOOLS_VERSION = '2024.05.26'
+NOW_TOOLS_VERSION = '2024.05.27'
 if os.path.isfile('DEV_ENV.py'):
     import DEV_ENV
 
