@@ -1434,7 +1434,7 @@ class RUN:
             Log(f'> 今日推币：【{pushedTimesToday}】次')
             Log(f'> 总推币：【{pushedTimesTotal}】次')
             if END:
-                if pushedTimesTotal > 0:
+                if PUSH_TIMES_balance > 0:
                     for i in range(PUSH_TIMES_balance):
                         print(f'>> 开始第【{PUSH_TIMES_balance+1}】次推币')
                         self.DRAGONBOAT_2024_pushCoin()
