@@ -1233,11 +1233,10 @@ class RUN:
                 obj =response.get('obj',[{}])
                 maxPassLevel = obj.get('maxPassLevel','')
                 ifPassAllLevel = obj.get('ifPassAllLevel','')
-                if ifPassAllLevel:
-                    Log(f'> 已通关')
-                else:
-                    Log(f'> 当前关卡：【{maxPassLevel}】')
+                if maxPassLevel != 30:
                     self.DRAGONBOAT_2024_win(maxPassLevel)
+                else:
+                    self.DRAGONBOAT_2024_win(0)
 
             else:
                 error_message = response.get('errorMessage', '无返回')
@@ -1329,6 +1328,8 @@ class RUN:
                     self.taskCode = task.get('taskCode',None)
                     if self.taskCode:
                         self.DRAGONBOAT_2024_finishTask()
+                    if taskType == 'PLAY_ACTIVITY_GAME':
+                        self.DRAGONBOAT_2024_Game_indexInfo()
             else:
                 error_message = response.get('errorMessage', '无返回')
                 if '没有资格参与活动' in error_message:
@@ -1583,7 +1584,7 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
     ''')
 
     local_script_name = os.path.basename(__file__)
-    local_version = '2024.05.24'
+    local_version = '2024.05.26'
     if IS_DEV:
         import_Tools()
     else:
