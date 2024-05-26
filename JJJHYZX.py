@@ -7,15 +7,17 @@
 # cron "5 7,11,15,20 * * *" script-path=xxx.py,tag=匹配cron用
 # const $ = new Env('999会员中心小程序')
 import base64
+import json
 import os
 import random
 import time
-from datetime import datetime, time as times
+from datetime import datetime
 import requests
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 # 禁用安全请求警告
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
 IS_DEV = False
 if os.path.isfile('DEV_ENV.py'):
     import DEV_ENV
@@ -37,8 +39,7 @@ def Log(cont=''):
     if cont:
         one_msg += f'{cont}\n'
         send_msg += f'{cont}\n'
-
-
+        
 class RUN:
     def __init__(self, info, index):
         global one_msg
@@ -56,8 +57,18 @@ class RUN:
         self.index = index + 1
         self.s = requests.session()
         self.s.verify = False
+
+        CF_PROXY_URL = os.environ.get('CF_PROXY_URL', False)
+        if CF_PROXY_URL:
+            print(f'【已设置反代】：{CF_PROXY_URL}✅')
+            self.baseUrl = CF_PROXY_URL
+        else:
+            print(
+                f'【未设置反代，使用官方域名】❌ 脚本如果报错（unsafe legacy renegotiation）请自行搭建反代，搭建方法见：https://github.com/CHERWING/CHERWIN_SCRIPTS/tree/main/Cloudflare%20Workers%20Proxy')
+            self.baseUrl = 'https://mc.999.com.cn/'
+
         self.headers = {
-            'Host': 'mc.999.com.cn',
+            'Host': self.baseUrl.split('/')[2],
             'xweb_xhr': '1',
             'locale': 'zh_CN',
             'Authorization': self.token,
@@ -70,7 +81,8 @@ class RUN:
             'Referer': 'https://servicewechat.com/wx58ff7065f6d3dffe/69/page-frame.html',
             'Accept-Language': 'zh-CN,zh;q=0.9',
         }
-        self.baseUrl = 'https://mc.999.com.cn/'
+
+
         self.use_power_max = False
 
     def make_request(self, url, method='post', headers={}, data={}, params=None):
@@ -78,9 +90,9 @@ class RUN:
             headers = self.headers
         try:
             if method.lower() == 'get':
-                response = self.s.get(url, headers=headers, verify=False, params=params)
+                response = self.s.get(url, headers=headers,  params=params)
             elif method.lower() == 'post':
-                response = self.s.post(url, headers=headers, json=data, params=params, verify=False)
+                response = self.s.post(url, headers=headers, json=data, params=params)
             else:
                 raise ValueError("不支持的请求方法❌: " + method)
             return response.json()
@@ -96,6 +108,7 @@ class RUN:
         Log(f'\n====== {act_name} ======')
         url = f"{self.baseUrl}zanmall_diy/ma/personal/user/info"
         response = self.make_request(url,'get')
+        # print(response)
         if response.get('success', False):
             data = response.get('data', {})
             self.userId = data.get('userId', '')
@@ -224,6 +237,27 @@ class RUN:
             push_res = CHERWIN_TOOLS.wxpusher(self.send_UID, one_msg, APP_NAME)
             print(push_res)
 
+def get_ip():
+    response = requests.get('https://cdn.jsdelivr.net/gh/parserpp/ip_ports/proxyinfo.json',verify=False)
+    # 使用正则表达式提取 IP 地址和端口号
+    data = response.text
+    lines = data.strip().split('\n')
+    # json_objects = [json.loads(line) for line in lines]
+    json_objects = [json.loads(line) for line in lines if json.loads(line)["country"] == "CN"]
+    # json_array = json.dumps(json_objects, indent=4)
+    if json_objects:
+        selected = random.choice(json_objects)
+        result = f"{selected['type']}://{selected['host']}:{selected['port']}"
+
+        proxies = {
+            selected['type']: result,
+        }
+        print(f"当前代理：{result}")
+        return proxies
+    else:
+        print("没匹配到CN的ip")
+        return None
+
 
 def random_delay(min_delay=1, max_delay=5):
     """
@@ -300,7 +334,7 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
 ✨✨✨ @Author CHERWIN✨✨✨
 ''')
     local_script_name = os.path.basename(__file__)
-    local_version = '2024.05.24'
+    local_version = '2024.05.27'
     if IS_DEV:
         import_Tools()
     else:
