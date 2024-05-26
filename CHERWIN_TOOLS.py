@@ -14,6 +14,7 @@ from datetime import datetime
 NOW_TOOLS_VERSION = '2024.05.26'
 if os.path.isfile('DEV_ENV.py'):
     import DEV_ENV
+
     IS_DEV = True
 else:
     IS_DEV = False
@@ -94,7 +95,6 @@ def compare_versions(local_version, server_version):
         return True  # 当前版本位数较短，即版本号形如 x.y 比 x.y.z 低
     else:
         return False  # 当前版本与服务器版本相同或更高
-
 
 
 def CHECK_UPDATE_NEW(local_version, server_version, server_script_url, script_filename, server_version_url=None,
@@ -191,7 +191,6 @@ def get_AuthorInviteCode(url):
     except Exception as e:
         print(f"An error occurred: {e}")
         return {}
-
 
 
 def CHECK_PARAMENTERS(index, input_string, required_parameters):
@@ -361,6 +360,8 @@ def CHECK():
     except:
         print('获取CHERWIN_SCRIPT_CONFIG.json失败')
         return False
+
+
 def GJJJ_SIGN():
     app_id = "667516"
     app_crypto = "FH3yRrHG2RfexND8"
@@ -373,6 +374,8 @@ def GJJJ_SIGN():
         "sign": sign
     }
     return new_data
+
+
 def KWW_SIGN(memberId):
     timestamp = int(time.time() * 1000)
     random_num = random.randint(0, 31)
@@ -388,6 +391,8 @@ def KWW_SIGN(memberId):
         "user-random": str(random_num)
     }
     return update_headers
+
+
 def TYQH_SIGN(parameters={}, body=None):
     sorted_keys = sorted(parameters.keys())
     parameter_strings = []
@@ -425,6 +430,7 @@ def TYQH_SIGN(parameters={}, body=None):
     }
     return sign_header
 
+
 def YDXQ_SIGN():
     sign_nonce = "tnFWIEFpVPJkOuNX4zdsKeBEMIakLS1RsnS7cH0Id6MjEEBGO"
     n = str(int(time.time()))
@@ -433,8 +439,8 @@ def YDXQ_SIGN():
     sign_hash = hashlib.md5(sign_string.encode()).hexdigest()
     return sign_hash, n
 
-def HXEK_SIGN(memberId,appid):
 
+def HXEK_SIGN(memberId, appid):
     # appid = "wxa1f1fa3785a47c7d"
     secret = 'damogic8888'
     # 获取GMT+8的当前时间戳
@@ -448,9 +454,51 @@ def HXEK_SIGN(memberId,appid):
     # 使用MD5进行加密
     md5_hash = hashlib.md5(raw_string.encode())
     sign = md5_hash.hexdigest()
-    return sign,random_int,timestamp
+    return sign, random_int, timestamp
 
-def main(APP_NAME, local_script_name, ENV_NAME, local_version,need_invite=False):
+
+def KPL_SIGN(url, params):
+    secret_key = "d19b9f22f5aac41ac0b56a1947f82bce"
+    # 提取URL路径（去掉域名部分）
+    url_path = url.replace("https://app.tv.kohesport.qq.com", "")
+    # 如果params是对象，转换为JSON字符串
+    if isinstance(params, dict):
+        params_str = json.dumps(params, separators=(',', ':'))
+    else:
+        params_str = params
+    # 拼接路径、参数和密钥
+    string_to_hash = f"{url_path}{params_str}{secret_key}"
+    # 计算SHA256哈希值
+    signature = hashlib.sha256(string_to_hash.encode('utf-8')).hexdigest()
+    sign_header = {
+        "X-TGATV-SignatureMethod": "sha256",
+        "X-TGATV-SignatureVersion": "3",
+        "X-TGATV-Signature": signature
+    }
+    return sign_header
+
+def get_ip():
+    response = requests.get('https://cdn.jsdelivr.net/gh/parserpp/ip_ports/proxyinfo.json',verify=False)
+    # 使用正则表达式提取 IP 地址和端口号
+    data = response.text
+    lines = data.strip().split('\n')
+    # json_objects = [json.loads(line) for line in lines]
+    json_objects = [json.loads(line) for line in lines if json.loads(line)["country"] == "CN"]
+    # json_array = json.dumps(json_objects, indent=4)
+    if json_objects:
+        selected = random.choice(json_objects)
+        result = f"{selected['type']}://{selected['host']}:{selected['port']}"
+
+        proxies = {
+            selected['type']: result,
+        }
+        print(f"当前代理：{result}")
+        return proxies
+    else:
+        print("没匹配到CN的ip")
+        return None
+    
+def main(APP_NAME, local_script_name, ENV_NAME, local_version, need_invite=False):
     global APP_INFO, TIPS, TIPS_HTML
     git_url = f'https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/{local_script_name}'
     if CHECK():
@@ -473,6 +521,7 @@ def main(APP_NAME, local_script_name, ENV_NAME, local_version,need_invite=False)
         return ENV, APP_INFO, TIPS, TIPS_HTML, AuthorCode
     else:
         exit()
+
 
 if __name__ == '__main__':
     print(NOW_TOOLS_VERSION)
