@@ -7,7 +7,10 @@ import os
 import random
 import time
 import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
+# 禁用安全请求警告
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 IS_DEV = False
 if os.path.isfile('DEV_ENV.py'):
     import DEV_ENV
