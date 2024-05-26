@@ -11,6 +11,11 @@
 ## ✨自助挂机：[https://gj.cherwin.cn](https://gj.cherwin.cn)
 
 ## ✨更新历史
+
+- <b>2024.05.27</b>
+    - 修复999脚本（需要自行搭建反代）
+    - 新增999域名反代搭建方法
+
   - <b>2024.05.25</b>
     - 新增统一快乐星球小程序脚本
     - 新增hotwind热风微商城小程序脚本
@@ -20,7 +25,7 @@
 ```
 名称：CHERWIN_SCRIPT
 类型：公开仓库
-链接：ql repo https://github.com/CHERWING/CHERWIN_SCRIPTS.git "" "" "CHERWIN_TOOLS.py|notify.py" "" ""
+链接：ql repo https://github.com/CHERWING/CHERWIN_SCRIPTS.git "" "Cloudflare" "CHERWIN_TOOLS.py|notify.py" "" ""
 定时类型：crontab
 定时规则：随便
 文件后缀：py|js
