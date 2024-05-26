@@ -1233,11 +1233,37 @@ class RUN:
                 obj =response.get('obj',[{}])
                 maxPassLevel = obj.get('maxPassLevel','')
                 ifPassAllLevel = obj.get('ifPassAllLevel','')
-                if ifPassAllLevel:
-                    Log(f'> 已通关')
-                else:
-                    Log(f'> 当前关卡：【{maxPassLevel}】')
+                if maxPassLevel != 30:
                     self.DRAGONBOAT_2024_win(maxPassLevel)
+                else:
+                    self.DRAGONBOAT_2024_win(0)
+
+            else:
+                error_message = response.get('errorMessage', '无返回')
+                if '没有资格参与活动' in error_message:
+                    self.DRAGONBOAT_2024_black = True
+                    Log('会员日任务风控')
+                return False
+        except Exception as e:
+            print(e)
+            return False
+
+    def DRAGONBOAT_2024_Game_init(self):
+        Log('====== 开始划龙舟游戏 ======')
+        try:
+            payload = {}
+            url = 'https://mcs-mimp-web.sf-express.com/mcs-mimp/commonPost/~memberNonactivity~dragonBoat2024GameService~init'
+
+            response = self.do_request(url, payload)
+            # print(response)
+            if response.get('success'):
+                obj =response.get('obj',[{}])
+                currentIndex = obj.get('currentIndex','')
+                ifPassAllLevel = obj.get('ifPassAllLevel','')
+                if currentIndex != 30:
+                    self.DRAGONBOAT_2024_win(currentIndex)
+                else:
+                    self.DRAGONBOAT_2024_win(0)
 
             else:
                 error_message = response.get('errorMessage', '无返回')
@@ -1329,6 +1355,8 @@ class RUN:
                     self.taskCode = task.get('taskCode',None)
                     if self.taskCode:
                         self.DRAGONBOAT_2024_finishTask()
+                    if taskType == 'PLAY_ACTIVITY_GAME':
+                        self.DRAGONBOAT_2024_Game_init()
             else:
                 error_message = response.get('errorMessage', '无返回')
                 if '没有资格参与活动' in error_message:
@@ -1402,11 +1430,7 @@ class RUN:
             # print(response)
             if response.get('success'):
                 obj = response.get('obj',False)
-                if obj:
-                    Log(f'> 完成任务【{self.taskName}】成功')
-                else:
-                    Log(f'> 完成任务【{self.taskName}】失败')
-
+                Log(f'> 完成任务【{self.taskName}】成功')
             else:
                 error_message = response.get('errorMessage', '无返回')
                 if '没有资格参与活动' in error_message:
@@ -1417,9 +1441,9 @@ class RUN:
 
     def DRAGONBOAT_2024_win(self,level):
         try:
-            for i in range(level,30):
-                print(f'开始第【{i+1}】关')
-                payload = {"levelIndex":i+1}
+            for i in range(level,31):
+                print(f'开始第【{i}】关')
+                payload = {"levelIndex":i}
                 url = 'https://mcs-mimp-web.sf-express.com/mcs-mimp/commonPost/~memberNonactivity~dragonBoat2024GameService~win'
 
                 response = self.do_request(url, payload)
@@ -1434,9 +1458,9 @@ class RUN:
                             print(f'> 获得：【{currency}】x{amount}')
                     else:
                         print(f'> 本关无奖励')
-                    random_time =random.randint(10,15)
-                    print(f'>> 等待{random_time}秒 <<')
-                    time.sleep(random_time)
+                    # random_time =random.randint(10,15)
+                    # print(f'>> 等待{random_time}秒 <<')
+                    # time.sleep(random_time)
                 else:
                     error_message = response.get('errorMessage', '无返回')
                     print(error_message)
@@ -1487,7 +1511,7 @@ class RUN:
             self.DRAGONBOAT_2024_weeklyGiftStatus()
             self.DRAGONBOAT_2024_coinStatus()
             self.DRAGONBOAT_2024_taskList()
-            self.DRAGONBOAT_2024_Game_indexInfo()
+            # self.DRAGONBOAT_2024_Game_init()
             self.DRAGONBOAT_2024_coinStatus(True)
 
         self.sendMsg()
@@ -1583,7 +1607,7 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
     ''')
 
     local_script_name = os.path.basename(__file__)
-    local_version = '2024.05.24'
+    local_version = '2024.05.26'
     if IS_DEV:
         import_Tools()
     else:
