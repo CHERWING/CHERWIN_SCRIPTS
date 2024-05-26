@@ -89,7 +89,6 @@ class RUN:
         self.use_power_max = False
 
     def make_request(self, url, method='post', headers={}, data={}, params=None):
-
         if headers == {}:
             headers = self.headers
         try:
@@ -108,7 +107,7 @@ class RUN:
             print("发生了未知错误❌：", e)
 
     def gen_sign(self):
-        sign, random_int, timestamp = CHERWIN_TOOLS.HXEK_SIGN(self.memberId)
+        sign, random_int, timestamp = CHERWIN_TOOLS.HXEK_SIGN(self.memberId,self.appid)
         self.defualt_parmas['random'] = random_int
         self.defualt_parmas['sign'] = sign
         self.defualt_parmas['timestamp'] = timestamp
@@ -252,7 +251,7 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
 ✨✨✨ @Author CHERWIN✨✨✨
 ''')
     local_script_name = os.path.basename(__file__)
-    local_version = '2024.05.22'
+    local_version = '2024.05.26'
     if IS_DEV:
         import_Tools()
     else:
@@ -280,4 +279,4 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
         for index, infos in enumerate(tokens):
             run_result = RUN(infos, index).main()
             if not run_result: continue
-        if send: send(f'{APP_NAME}挂机通知', send_msg + TIPS_HTML)
+        # if send: send(f'{APP_NAME}挂机通知', send_msg + TIPS_HTML)
