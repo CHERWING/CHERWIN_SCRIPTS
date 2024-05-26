@@ -1,7 +1,41 @@
 ## 起因
 
   999会员中心脚本因为服务器不允许使用不安全的传统重新协商，报错（unsafe legacy renegotiation），所以需要使用反代解决
+  当然，如果你有服务器和域名最好使用用自己的Nginx反代（Cloudflare可能会存在域名污染）
   
+  Nginx反代配置：
+  
+  ```
+    #PROXY-START/
+    location ^~ /
+    {
+        proxy_pass https://mc.999.com.cn;
+        proxy_set_header Host mc.999.com.cn;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header REMOTE-HOST $remote_addr;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
+        proxy_http_version 1.1;
+        # proxy_hide_header Upgrade;
+    
+        add_header X-Cache $upstream_cache_status;
+        #Set Nginx Cache
+    
+        set $static_fileBp4k50Sg 0;
+        if ( $uri ~* "\.(gif|png|jpg|css|js|woff|woff2)$" )
+        {
+            set $static_fileBp4k50Sg 1;
+            expires 1m;
+        }
+        if ( $static_fileBp4k50Sg = 0 )
+        {
+            add_header Cache-Control no-cache;
+        }
+    }
+    #PROXY-END/
+  ```
+
 ## 简介
 
 这个 Cloudflare Workers 脚本充当了一个反向代理，它的主要功能是接收客户端的请求，并将请求代理到目标地址，然后将目标地址的响应返回给客户端。具体功能包括：
