@@ -105,7 +105,7 @@ class RUN:
         response = self.make_request(url,method='get')
         if response.get('status', False):
             print(f'{act_name}成功！✅')
-            site = {'1520': "活力伊利", '1160': '金典SATINE', '1068': '甄稀冰淇淋'}
+            site = {'1520': "活力伊利", '1160': '金典SATINE', '1068': '甄稀冰淇淋','1130': '金典有机生活+'}
             registerSource = response.get('data')['registerSource']
             Log(f'当前Source：【{registerSource}】')
             siteName = site.get(registerSource,False)
