@@ -109,52 +109,53 @@ class RUN:
             VipSignInDtl=data.get('VipSignInDtl', {})
             SignedDays=VipSignInDtl.get('SignedDays', '')
             IsSigInToday=VipSignInDtl.get('IsSigInToday', False)
-            # 手机号
+            SignInCfg = data.get('SignInCfg', {})
+            ActId = SignInCfg.get('ActId', '')
             if IsSigInToday:
                 Log(f'>>今日已签到，累计签到：【{SignedDays}】天')
             else:
                 Log('开始签到')
-                self.SignIn()
+                self.SignIn(ActId)
             return True
         else:
             Log('可能token失效了')
             return False
 
-    def SignIn(self):
-            Log('>>>>>>开始签到')
-            url = "https://wxa-tp.ezrpro.com/myvip/Vip/SignIn/SignIn"
-            data = {
-                "ActId": 822,
-                "ActRemindStatus": True
-            }
-            response = s.post(url, headers=self.headers,json=data)
-            response = response.json()
-            # print(response)
-            if response.get('Success', False):
-                data = response.get('Result', {})
-                BonusValue = data.get('BonusValue', '')
-                Log(f'签到成功，获得：【{BonusValue}】积分')
-                return True
-            else:
-                ErrMsg = response.get('ErrMsg', '')
-                Log(f'签到失败：{ErrMsg}')
-                return False
+    def SignIn(self, ActId):
+        Log('====== 开始签到 ======')
+        url = f"{self.baseUrl}Vip/SignIn/SignIn"
+        data = {
+            "ActId": ActId,
+            "ActRemindStatus": True
+        }
+        response = s.post(url, headers=self.headers,json=data)
+        response = response.json()
+        # print(response)
+        if response.get('Success', False):
+            data = response.get('Result', {})
+            BonusValue = data.get('BonusValue', '')
+            Log(f'签到成功，获得：【{BonusValue}】积分')
+            return True
+        else:
+            ErrMsg = response.get('ErrMsg', '')
+            Log(f'签到失败：{ErrMsg}')
+            return False
 
 
     def BonusClassify(self):
-            Log('>>>>>>获取积分信息')
-            url = "https://wxa-tp.ezrpro.com/myvip/Vip/Bonus/GetMyBonusLogs?pageSize=10&pageIndex=1&BonusClassify=0"
-            response = s.get(url, headers=self.headers)
-            response = response.json()
-            # print(response)
-            if response.get('Success',False):
-                data = response.get('Result', {})
-                BonusTotal=data.get('BonusTotal', '')
-                Log(f'当前积分：【{BonusTotal}】')
-                return True
-            else:
-                Log('可能token失效了')
-                return False
+        Log('>>>>>>获取积分信息')
+        url = "https://wxa-tp.ezrpro.com/myvip/Vip/Bonus/GetMyBonusLogs?pageSize=10&pageIndex=1&BonusClassify=0"
+        response = s.get(url, headers=self.headers)
+        response = response.json()
+        # print(response)
+        if response.get('Success',False):
+            data = response.get('Result', {})
+            BonusTotal=data.get('BonusTotal', '')
+            Log(f'当前积分：【{BonusTotal}】')
+            return True
+        else:
+            Log('可能token失效了')
+            return False
 
     def main(self):
         Log(f"\n开始执行第{self.index}个账号--------------->>>>>")
@@ -233,7 +234,7 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
 ✨✨✨ @Author CHERWIN✨✨✨
 ''')
     local_script_name = os.path.basename(__file__)
-    local_version = '2024.05.21'
+    local_version = '2024.06.02'
     if IS_DEV:
         import_Tools()
     else:
