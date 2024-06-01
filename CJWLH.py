@@ -252,7 +252,7 @@ if __name__ == '__main__':
     ENV_NAME = 'CJWLH'
     CK_URL = 'program.springcocoon.com请求头'
     CK_NAME = 'X-XSRF-TOKEN@Cookie'
-    CK_EX = 'ZMPwg2nr-kMV0HQMTNtmxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+    CK_EX = 'ZMPwg2nr-kMV0HQMTNtmxxxxxxxxxxxxxxxxxxxxxxxxx@ASP.NET_SessionId=l2cxxxxxxxxxxx'
     print(f'''
 ✨✨✨ {APP_NAME}脚本✨✨✨
 ✨ 功能：
