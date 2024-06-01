@@ -150,9 +150,13 @@ class RUN:
         url = f"{self.baseUrl}member_sign.json"
         response = self.make_request(url,'post',params=self.defualt_parmas)
         if response.get('errcode', -1) == 0:
-            points = response.get('points', '')
+            res = response.get('response', {})
+            memberSign = res.get('memberSign', {})
+            integralCount = memberSign.get('integralCount', '')
+            continuousCount = memberSign.get('continuousCount', '')
+            points = res.get('points', '')
             Log(f'{act_name}成功！✅')
-            Log(f'> 当前积分：【{points}】')
+            Log(f'> 当前积分：【{points}】 连续签到：【{continuousCount}】天')
             return True
         elif response.get('errcode', -1) == 900001:
             Log(f'> 今天已签到✅')
