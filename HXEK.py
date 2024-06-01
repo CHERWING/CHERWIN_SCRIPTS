@@ -251,7 +251,7 @@ if __name__ == '__main__':
 export {ENV_NAME}='{CK_NAME}参数值'多账号#或&分割
 export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
 ✨ ✨ 注意：抓完CK没事儿别打开小程序，重新打开小程序请重新抓包
-✨ 推荐cron：5 7,11,15,20 * * *
+✨ 推荐cron：5 11 * * *
 ✨✨✨ @Author CHERWIN✨✨✨
 ''')
     local_script_name = os.path.basename(__file__)
