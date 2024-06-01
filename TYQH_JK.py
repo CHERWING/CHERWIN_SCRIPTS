@@ -3,7 +3,7 @@
 # -------------------------------
 # @Author : cherwin
 # -------------------------------
-# cron "59 9 * 2-6 * *" script-path=xxx.py,tag=匹配cron用
+# cron "59 59 9 1 2-7 *" script-path=xxx.py,tag=匹配cron用
 # const $ = new Env('统一茄皇监控')
 import hashlib
 import json
@@ -23,26 +23,32 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 IS_DEV = False
 if os.path.isfile('DEV_ENV.py'):
     import DEV_ENV
+
     IS_DEV = True
 
 if os.path.isfile('notify.py'):
     from notify import send
+
     print("加载通知服务成功！")
 else:
     print("加载通知服务失败!")
 send_msg = ''
-one_msg=''
+one_msg = ''
+
+
 def Log(cont=''):
-    global send_msg,one_msg
+    global send_msg, one_msg
     print(cont)
     if cont:
         one_msg += f'{cont}\n'
         send_msg += f'{cont}\n'
 
+
 USER_INFO = {}
 
+
 class RUN:
-    def __init__(self, info,index):
+    def __init__(self, info, index):
         global one_msg
         one_msg = ''
         split_info = info.split('@')
@@ -110,7 +116,7 @@ class RUN:
             print("发生了未知错误：", e)
 
     def gen_sign(self, parameters={}, body=None):
-        sign_header=CHERWIN_TOOLS.TYQH_SIGN(parameters,body)
+        sign_header = CHERWIN_TOOLS.TYQH_SIGN(parameters, body)
         self.headers.update(sign_header)
         return self.headers
 
@@ -148,7 +154,7 @@ class RUN:
     def get_CapCode(self, slideImgInfo):
         slidingImage = slideImgInfo.get('slidingImage', None)
         backImage = slideImgInfo.get('backImage', None)
-        dddddocr_api = os.environ.get('OCR_API',False)
+        dddddocr_api = os.environ.get('OCR_API', False)
         if not dddddocr_api:
             print('未定义变量【OCR_API】\n取消验证码识别\n搭建方式：https://github.com/CHERWING/CHERWIN_SCRIPTS')
             return False
@@ -157,9 +163,10 @@ class RUN:
                 "slidingImage": slidingImage,
                 "backImage": backImage
             }
-            response = requests.post(f"{dddddocr_api}/capcode", data=json.dumps(data),headers={'Content-Type': 'application/json'})
+            response = requests.post(f"{dddddocr_api}/capcode", data=json.dumps(data),
+                                     headers={'Content-Type': 'application/json'})
             print(response.json())
-            self.capcode = response.json().get('result','')
+            self.capcode = response.json().get('result', '')
             if self.capcode:
                 return True
             else:
@@ -169,7 +176,7 @@ class RUN:
         slidingImage = slideImgInfo.get('slidingImage', None)
         backImage = slideImgInfo.get('backImage', None)
         if slidingImage and backImage:
-            self.capcode =CHERWIN_TOOLS.CAPCODE(slidingImage,backImage)
+            self.capcode = CHERWIN_TOOLS.CAPCODE(slidingImage, backImage)
             if self.capcode:
                 return True
             else:
@@ -179,7 +186,7 @@ class RUN:
         print(f'提交验证码--->>>')
         # try:
         print(f'验证码：{self.capcode}')
-        params = {'xpos':self.capcode}
+        params = {'xpos': self.capcode}
         print(params)
         sign_header = self.gen_sign(body=params)
         url = f'{self.base_url}/checkUserCapCode'
@@ -207,18 +214,18 @@ class RUN:
             code = data.get('code', -1)
             if code == 0:
                 data = data.get('data', {})[1]
-                num = data.get('num',0)
-                if num < 0 :
+                num = data.get('num', 0)
+                if num < 0:
                     Log('兑换上限,跳过')
                     return False
                 # print(f"兑换列表：{data}")
-                exchangePrizeVoList = data.get('exchangePrizeVoList',None)
+                exchangePrizeVoList = data.get('exchangePrizeVoList', None)
                 if exchangePrizeVoList:
                     for goods in exchangePrizeVoList:
-                        name = goods.get('name','')
-                        self.goodsid = goods.get('id','')
-                        usableStock = goods.get('usableStock','')
-                        if usableStock >0:
+                        name = goods.get('name', '')
+                        self.goodsid = goods.get('id', '')
+                        usableStock = goods.get('usableStock', '')
+                        if usableStock > 0:
                             Log(f'ID：【{self.goodsid}】 【{name}】 当前剩余：{usableStock}【可兑换】')
                             self.sendMsg()
                             if send: send(f'{APP_NAME}挂机通知', send_msg + TIPS_HTML)
@@ -266,13 +273,11 @@ class RUN:
 
     def userTask(self):
         print('\n--------------- 开始日常任务 ---------------')
-        wait_time = random.randint(1000, 3000) / 1000.0  # 转换为秒
         if not self.Login_res:
             return False
         self.exchange_find()
-
+        time.sleep(0.5)
         return True
-
 
     def sendMsg(self, help=False):
         if self.send_UID:
@@ -306,16 +311,22 @@ def down_file(filename, file_url):
         print(f'【{filename}】下载失败：{str(e)}')
         return False
 
+
 def import_Tools():
-    global CHERWIN_TOOLS,ENV, APP_INFO, TIPS, TIPS_HTML, AuthorCode
+    global CHERWIN_TOOLS, ENV, APP_INFO, TIPS, TIPS_HTML, AuthorCode
     import CHERWIN_TOOLS
-    ENV, APP_INFO, TIPS, TIPS_HTML, AuthorCode = CHERWIN_TOOLS.main(APP_NAME, local_script_name, ENV_NAME,local_version)
+    ENV, APP_INFO, TIPS, TIPS_HTML, AuthorCode = CHERWIN_TOOLS.main(APP_NAME, local_script_name, ENV_NAME,
+                                                                    local_version)
+
+
 import threading
+
 
 def execute_task(infos, index):
     run_result = RUN(infos, index).userTask()
     if not run_result:
         return
+
 
 if __name__ == '__main__':
     APP_NAME = '统一茄皇监控'
@@ -331,12 +342,12 @@ export OCR_API= 'http://localhost:3721'
 ✨ 由于青龙python版本问题无法直接使用dddocr需要自行搭建API，搭建方式：https://github.com/CHERWING/CHERWIN_OCR
 ✨ 如果你的环境可以安装dddocr库则可以替换代码内的【self.get_CapCode】为【self.get_CapCode_local】
 export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
-✨ 推荐定时：*/10 9:59 1-31 2-6 * * 2-6月每月1日9点55到10点1分，每10秒执行一次
+✨ 推荐定时：59 59 9 1 2-7 * (2-7月每月1日9点59)
 ✨ 第一个账号助力作者，其余互助
 ✨✨✨ @Author CHERWIN✨✨✨
                 ''')
     local_script_name = os.path.basename(__file__)
-    local_version = '2024.05.15'
+    local_version = '2024.06.02'
     if IS_DEV:
         import_Tools()
     else:
@@ -352,8 +363,8 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
                 exit()
     print(TIPS)
     token = ''
-    ENV = os.environ.get('TYQH','')
-    TYQH_DHID = os.environ.get('TYQH_DHID',None)
+    ENV = os.environ.get('TYQH', '')
+    TYQH_DHID = os.environ.get('TYQH_DHID', None)
     if TYQH_DHID == '0':
         Log(f'\n当前已设置TYQH_DHID变量，将自动遍历兑换商品')
     elif TYQH_DHID:
@@ -389,11 +400,9 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
                     thread = threading.Thread(target=execute_task, args=(infos, index))
                     threads.append(thread)
                     thread.start()
-
                 for thread in threads:
                     thread.join()
         elif current_time.tm_hour == 10 and current_time.tm_min > 5:
             break
         else:
             time.sleep(1)
-
