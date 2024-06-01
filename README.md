@@ -12,10 +12,10 @@
 
 ## ✨更新历史
 - <b>2024.06.01</b>
-    - 新增 春茧未来荟小程序
+    - 新增 春茧未来荟小程序 (https://github.com/CHERWING/CHERWIN_SCRIPTS/issues/29)
 
 - <b>2024.06.01</b>
-    - 新增 老板电器服务微商城小程序
+    - 新增 老板电器服务微商城小程序(https://github.com/CHERWING/CHERWIN_SCRIPTS/issues/30)
 
 - <b>2024.05.27</b>
     - 修复999脚本（需要自行搭建反代）
