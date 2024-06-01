@@ -247,6 +247,7 @@ class RUN:
                             print('任务不支持，跳过')
                             break
                         self.changeStatus()
+                        self.task_receive()
                     elif rightsClaimStatus == 1:
                         self.task_receive()
                     else:
