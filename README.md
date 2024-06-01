@@ -15,6 +15,8 @@
 
 - <b>2024.06.02</b>
     - 优化 统一快乐星球小程序最新活动id获取，自动获取活动id判断活动类型
+    - 鸿星尔克 修复签到结果判断
+    - 特步会员中心 修改动态获取signid
 
 - <b>2024.06.01</b>
     - 新增 春茧未来荟小程序 (https://github.com/CHERWING/CHERWIN_SCRIPTS/issues/29)
