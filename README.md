@@ -11,6 +11,11 @@
 ## ✨自助挂机：[https://gj.cherwin.cn](https://gj.cherwin.cn)
 
 ## ✨更新历史
+
+
+- <b>2024.06.01</b>
+    - 优化 统一快乐星球小程序最新活动id获取，自动获取活动id判断活动类型
+
 - <b>2024.06.01</b>
     - 新增 春茧未来荟小程序 (https://github.com/CHERWING/CHERWIN_SCRIPTS/issues/29)
 
