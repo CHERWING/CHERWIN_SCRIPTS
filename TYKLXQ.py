@@ -6,14 +6,12 @@
 import hashlib
 import os
 import random
+import re
 import time
 from datetime import datetime
 
 import requests
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
-# 禁用安全请求警告
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 IS_DEV = False
 if os.path.isfile('DEV_ENV.py'):
     import DEV_ENV
@@ -39,7 +37,7 @@ def Log(cont='',Notsend = False):
     else:
         print(cont)
 
-AUTHOR_WID = ['10872443198', '10596344325', '10872476061']
+AUTHOR_WID = ['10872443198', '10596344325', '10872476061', '10872406585']
 
 class RUN:
     def __init__(self, info, index):
@@ -134,6 +132,7 @@ class RUN:
         self.game_json_data = {}
         self.invite_wid = ''
         self.availablePoint = 0
+        self.act_module = []
 
     def make_request(self, url, method='post', headers={}, data={}, params=None):
         if headers == {}:
@@ -205,7 +204,6 @@ class RUN:
             nickname = data.get('nickname', '')
             self.wid = data.get('wid', '')
 
-            self.invite_wid = random.choice([wid for wid in AUTHOR_WID if wid != str(self.wid)])
             # print(f'取得的invite_wid:【{self.invite_wid}】')
 
             sourceObjectList = data.get('sourceObjectList', [])
@@ -360,11 +358,6 @@ class RUN:
             data = response.get('data', {})
             page_module_info_list = data.get("pageModuleInfoList", [])
 
-            # print("找到的page_module_info_list:", page_module_info_list)
-            # 初始化一个列表来存储匹配项的索引
-            indexes = []
-
-            # 遍历pageModuleInfoList
             for index, module in enumerate(page_module_info_list):
                 moduleJSON = module.get("moduleJSON", {})
                 # print("找到的moduleJSON:", moduleJSON)
@@ -373,17 +366,29 @@ class RUN:
                 items = content.get("items", [])
                 # print("找到的items:", items)
                 name = items[0].get("name")
-                if name == "活动页-列表新.png":
-                    indexes.append(index)
-            # 打印结果
-            print("找到的索引:", indexes)
-
-            # Log(f'> 当前积分：【{availablePoint}】')
+                if name == None:continue
+                if '活动页-列表' in name:
+                    link = items[0].get("link",{})
+                    link_name = link.get('name','').split('-')
+                    act_name = link_name[2]
+                    act_type = link_name[0]
+                    miniUrl = link.get('miniUrl','')
+                    pattern = r'activityId=(\d+)'
+                    # 使用正则表达式查找匹配
+                    activityId = re.search(pattern, miniUrl)
+                    # 提取activityId
+                    if activityId:
+                        activity_id = activityId.group(1)
+                        print(f'\n找到的活动：【{act_name}】 类型：【{act_type}】 ID：【{activity_id}】')
+                        self.game_json_data = self.set_json_data(activity_id, act_type)
+                        self.LightCard_index(act_name)
+                        self.LightCard_index(act_name, True)
+                        random_delay()
         else:
             print(f'> {act_name}失败❌：{response}')
             return False
 
-    def set_json_data(self, actname, type):
+    def set_json_data(self, activityId, type):
         self.game_json_data = {}
         json_data = self.json_data.copy()
         common_data = {
@@ -403,21 +408,19 @@ class RUN:
                 'productVersionId': "16233",
                 'appletVersion': 280,
                 'productId': 165646,
+                "productInstanceId": 3169913957,
+                'operationSource': 4,
+                "vid": 6013753979957,
+                "bosId": 4020112618957,
+                "cid": 176205957,
+                "activityId": activityId,
+                "vidType": 2,
+                'v': "76e04a82cc9efce6e19336bfddab891410029744"
             })
             refer = "hd-card-home"
             mpScene = 1089
             productVersionId = 3169913957
-            if actname == '小茗同学集卡兑好礼':
-                json_data.update({
-                    "productInstanceId": 3169913957,
-                    'activityId': "20001389211",
-                    'operationSource': 4,
-                    "vid": 6013753979957,
-                    "bosId": 4020112618957,
-                    "cid": 176205957,
-                    "vidType": 2,
-                    'v': "76e04a82cc9efce6e19336bfddab891410029744"
-                })
+
 
         elif type == '消消乐':
             productVersionId = 3169906957
@@ -426,11 +429,8 @@ class RUN:
                 'templateKey': "elimination",
                 'productVersionId': "12003",
                 'productId': 214,
+                "activityId": activityId,
             })
-            if actname == '一款喝不腻的柠檬茶':
-                json_data['activityId'] = "30000037711"
-            elif actname == '爱夸矿泉 简单就好':
-                json_data['activityId'] = "30000037495"
 
         elif type == '转盘':
             productVersionId = 3169919957
@@ -439,9 +439,9 @@ class RUN:
                 'templateKey': "bigwheel",
                 'productVersionId': "12004",
                 'productId': 222,
+                "activityId": activityId,
             })
-            if actname == '快乐星球':
-                json_data['activityId'] = "30000035776"
+
 
         if type in ['消消乐', '转盘']:
             mpScene = 1089
@@ -484,11 +484,16 @@ class RUN:
         if response.get('errcode', False) == "0" and response.get('data', {}):
             data = response.get('data', {})
             if data == {}: return False
+            theme = data.get('theme', {})
+            self.cards = theme.get('cards', [{}])
+
             startTime = data.get('startTime', "2024/05/23 10:00:00")
             endTime = data.get('endTime', "2024/05/23 10:00:00")
             act_start_time = datetime.strptime(startTime, "%Y/%m/%d %H:%M:%S")
             act_end_time = datetime.strptime(endTime, "%Y/%m/%d %H:%M:%S")
             current_time = datetime.now()
+
+
             is_within_range = act_start_time <= current_time <= act_end_time
             if is_within_range:
                 if not END:
@@ -506,6 +511,9 @@ class RUN:
                         cardName = card['cardName']
                         cardAmassedNum = card['cardAmassedNum']
                         Log(f'> 【{cardName}】卡【{cardAmassedNum}】张')
+                    if current_time.date() == act_end_time.date() and current_time < act_end_time:
+                        print("今日结束活动，进行自动兑换")
+                        self.getPrizeList()
                 else:
                     print(f'>> 当前已收集：')
                     for card in cards:
@@ -518,7 +526,11 @@ class RUN:
                             print(f'>> 开始第【{i + 1}】次点亮')
                             self.lightCard()
                             random_delay(3, 5)
-                    self.LightCard_hasHelped()
+                    for wid in AUTHOR_WID:
+                        if wid != str(self.wid):
+                            self.invite_wid =wid
+                            self.LightCard_hasHelped()
+                        random_delay()
                 return True
             else:
                 print(f'【{act_name}】已结束')
@@ -537,7 +549,6 @@ class RUN:
         response = self.make_request(url, data=self.game_json_data)
         # print(response)
         if response.get('errcode', False) == "0" and response.get('data', {}):
-            print(f'> {act_name}成功！✅')
             data = response.get('data', {})
             if data == {}: return False
             hasHelped = data.get('hasHelped', 0)
@@ -550,7 +561,7 @@ class RUN:
 
     def LightCard_helpLightCard(self):
         act_name = '助力'
-        Log(f'\n====== {act_name} ======',True)
+        Log(f'====== {act_name} ======',True)
         # print(json.dumps(json_data))
         url = f"{self.baseUrl}interactive/qianxi/amasscard/api/helpLightCard"
         response = self.make_request(url, data=self.game_json_data)
@@ -563,32 +574,95 @@ class RUN:
             Log(f'>> 帮助【{ownerNick}】点亮【{cardName}】卡',True)
             # if hasHelped:
             #     Log(f'>> 已点亮：【{hasHelped}】次')
+        if response.get('errcode', False) == "364" :
+            print('好友助力已满')
         else:
             print(f'> {act_name}失败❌：{response}')
             return False
 
     def lightCard(self):
         act_name = '点亮'
-        Log(f'\n====== {act_name} ======',True)
+        Log(f'====== {act_name} ======',True)
         # print(json.dumps(json_data))
         url = f"{self.baseUrl}interactive/qianxi/amasscard/api/lightCard"
         response = self.make_request(url, data=self.game_json_data)
-        # print(response)
-        cardId_li = {
-            30034868: '小',
-            30034869: '茗',
-            30034870: '到',
-            30034871: '同',
-            30034872: '学',
-            30034873: '好'}
+
         if response.get('errcode', False) == "0" and response.get('data', {}):
             print(f'> {act_name}成功！✅')
             data = response.get('data', {})
             if data == {}: return False
             cardId = data.get('cardId', 0)
-            cardName = cardId_li[cardId]
+            for card in self.cards:
+                if card["cardId"] == cardId:
+                    cardName =card["cardName"]
             Log(f'>> 获得：【{cardName}】卡',True)
 
+        else:
+            print(f'> {act_name}失败❌：{response}')
+            return False
+
+    # 获取所需卡片的数量
+    def get_card_amassed_num(self,card_id):
+        for card in self.cards:
+            if card["cardId"] == card_id:
+                return card["cardAmassedNum"]
+        return 0
+
+    # 计算最多可以兑换多少次
+    def calculate_max_exchanges(self,required_cards):
+        min_exchanges = float('inf')
+        for card_id, required_num in required_cards.items():
+            available_num = self.get_card_amassed_num(card_id)
+            max_exchanges_for_card = available_num // required_num
+            if max_exchanges_for_card < min_exchanges:
+                min_exchanges = max_exchanges_for_card
+        return min_exchanges
+
+    def getPrizeList(self):
+        act_name = '获取可兑换列表'
+        Log(f'\n====== {act_name} ======',True)
+        # print(json.dumps(json_data))
+        url = f"{self.baseUrl}interactive/qianxi/amasscard/api/getPrizeList"
+        response = self.make_request(url, data=self.game_json_data)
+
+        if response.get('errcode', False) == "0" and response.get('data', {}):
+            print(f'> {act_name}成功！✅')
+            data = response.get('data', {})
+            prizes =data.get('prizes', [{}])
+            for prize in prizes:
+                prizeId =prize.get('prizeId', '')
+                prizeName =prize.get('prizeName', '')
+                cardsNeeded =prize.get('cardsNeeded', '')
+                Log(f'>> 当前可兑换：【{prizeName}】',True)
+                Log(f'>> ID：【{prizeId}】',True)
+                # 需要消耗的卡片ID
+                cards_needed_list = cardsNeeded.split(",")
+
+                # 将所需的卡片ID转换为字典，假设每种卡片只需要1张
+                required_cards = {int(card_id): 1 for card_id in cards_needed_list}
+                # 计算并输出结果
+                max_exchanges = self.calculate_max_exchanges(required_cards)
+                print(f"最多可以兑换 {max_exchanges} 次")
+                # self.consumerCards(prizeId)
+                for i in range(max_exchanges+1):
+                    print(f'开始第【{i+1}】次兑换')
+                    self.consumerCards(prizeId)
+        else:
+            print(f'> {act_name}失败❌：{response}')
+            return False
+
+    def consumerCards(self,prizeId):
+        act_name = '兑换'
+        Log(f'====== {act_name} ======',True)
+        # print(json.dumps(json_data))
+        url = f"{self.baseUrl}interactive/qianxi/amasscard/api/consumerCards"
+        self.game_json_data['prizeId'] = prizeId
+
+        response = self.make_request(url, data=self.game_json_data)
+
+        if response.get('errcode', False) == "0" and response.get('data', {}):
+            if response.get('errmsg', '') == '操作成功':
+                print(f'> {act_name}成功！✅')
         else:
             print(f'> {act_name}失败❌：{response}')
             return False
@@ -725,49 +799,23 @@ class RUN:
             print(f'> {act_name}失败❌：{response}')
             return False
 
-    def Play_game(self):
-        act_name = '小茗同学集卡兑好礼'
-        act_type = '集卡'
-        self.game_json_data = self.set_json_data(act_name, act_type)
-        self.LightCard_index(act_name)
-        self.LightCard_index(act_name,True)
 
-        random_delay()
 
-        act_name = '一款喝不腻的柠檬茶'
-        act_type = '消消乐'
-
-        self.game_json_data = self.set_json_data(act_name, act_type)
-        if self.Check_act_info(act_name):
-            self.game_chance(act_name, act_type)
-
-        random_delay()
-
-        act_name = '爱夸矿泉 简单就好'
-        act_type = '消消乐'
-        self.game_json_data = self.set_json_data(act_name, act_type)
-        if self.Check_act_info(act_name):
-            self.game_chance(act_name, act_type)
-
-        random_delay()
-
-        act_name = '快乐星球'
-        act_type = '转盘'
-        self.game_json_data = self.set_json_data(act_name, act_type)
-        if self.Check_act_info(act_name):
-            self.game_chance(act_name, act_type)
 
     def main(self):
         Log(f"\n开始执行第{self.index}个账号--------------->>>>>")
         if self.check_token():
-            random_delay(5,30)
+            # random_delay(5,30)
             self.queryUserInfo()
             random_delay()
             self.getSimpleAccountInfo()
             random_delay()
             self.signMainInfo()
             random_delay()
-            self.Play_game()
+            self.queryPageInfo()
+            random_delay()
+            # self.Play_game()
+
             random_delay()
             self.getSimpleAccountInfo(True)
             self.sendMsg()
@@ -854,7 +902,7 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
 ✨✨✨ @Author CHERWIN✨✨✨
 ''')
     local_script_name = os.path.basename(__file__)
-    local_version = '2024.05.25'
+    local_version = '2024.06.02'
     if IS_DEV:
         import_Tools()
     else:
