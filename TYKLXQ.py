@@ -37,7 +37,7 @@ def Log(cont='',Notsend = False):
     else:
         print(cont)
 
-AUTHOR_WID = ['10872443198', '10596344325', '10872476061', '10872406585']
+AUTHOR_WID = ['10872443198', '10596344325', '10872476061', '10872406585', '10612799632']
 
 class RUN:
     def __init__(self, info, index):
