@@ -1,7 +1,7 @@
 # !/usr/bin/python3
 # -- coding: utf-8 --
-# cron "20 9 * * *" script-path=xxx.py,tag=匹配cron用
-# const $ = new Env('老板电器服务微商城小程序')
+# cron "5 10 * * *" script-path=xxx.py,tag=匹配cron用
+# const $ = new Env('劲友家小程序')
 import base64
 import json
 import os
@@ -773,7 +773,7 @@ if __name__ == '__main__':
 export {ENV_NAME}='{CK_NAME}参数值'多账号#或&分割
 export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
 ✨ ✨ 注意：抓完CK没事儿别打开小程序，重新打开小程序请重新抓包
-✨ 推荐cron：20 9 * * *
+✨ 推荐cron：5 10 * * *
 ✨✨✨ @Author CHERWIN✨✨✨
 ''')
     local_script_name = os.path.basename(__file__)
