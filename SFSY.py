@@ -370,7 +370,7 @@ class RUN:
         # 大冒险
         gameNum = 5
 
-        url = 'https://mcs-mimp-web.sf-express.com/mcs-mimp/commonPost/~memberNonactivity~receiveExchangeGameService~expand'
+        url = 'https://mcs-mimp-web.sf-express.com/mcs-mimp/commonPost/~memberNonactivity~receiveExchangeIndexService~expand'
         response = self.do_request(url, data={})
         # print(response)
         stu = response.get('success', False)
@@ -1708,8 +1708,9 @@ if __name__ == '__main__':
       打开{APP_NAME}APP或小程序
       点击我的
       打开抓包工具
-      点击“积分”，抓：
+      点击“积分”，以下几种url之一：
         https://mcs-mimp-web.sf-express.com/mcs-mimp/share/weChat/shareGiftReceiveRedirect
+        https://mcs-mimp-web.sf-express.com/mcs-mimp/share/app/shareRedirect
     多账号#分割 
 ✨ ✨✨wxpusher一对一推送功能，
   ✨需要定义变量export WXPUSHER=wxpusher的app_token，不设置则不启用wxpusher一对一推送
