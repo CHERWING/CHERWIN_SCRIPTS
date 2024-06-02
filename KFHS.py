@@ -49,7 +49,7 @@ class RUN:
         self.s.verify = False
 
         self.headers = {
-            'Host': 'fscrm.kraftheinz.net.cn',
+            'Host': 'kraftheinzcrm-uat.kraftheinz.net.cn',
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) WindowsWechat(0x63090719) XWEB/8447 Flue',
             'token': self.token,
             'Accept': '*/*',
@@ -61,7 +61,7 @@ class RUN:
             'Accept-Language': 'zh-CN,zh;q=0.9',
             'Content-Type': 'application/x-www-form-urlencoded',
         }
-        self.baseUrl = 'https://fscrm.kraftheinz.net.cn/crm/public/index.php/api/v1/'
+        self.baseUrl = 'https://kraftheinzcrm-uat.kraftheinz.net.cn/crm/public/index.php/api/v1/'
 
     def getUserInfo(self,End=False):
         global userid_list, username_list
@@ -283,8 +283,11 @@ class RUN:
             username = username_list[self.index-1]
             now_id = userid_list[self.index-1]
             Log(f'\n当前用于助力用户:【{username}】 ID:【{now_id}】')
-            self.helpAuthor(662056, cookbook_id, now_id)
-            self.helpAuthor(662086, cookbook_id, now_id)
+            self.helpAuthor(659402, cookbook_id, now_id)
+            self.helpAuthor(659403, cookbook_id, now_id)
+            self.helpAuthor(659404, cookbook_id, now_id)
+            self.helpAuthor(659405, cookbook_id, now_id)
+            self.helpAuthor(659406, cookbook_id, now_id)
             self.recordScoreShare(cookbook_id, now_id)
             self.sendMsg(True)
             return True
@@ -347,7 +350,10 @@ if __name__ == '__main__':
   打开抓包工具
   找请求头带{CK_NAME}的URl
   复制里面的{CK_NAME}参数值
-✨ 注册链接（复制微信打开）：https://fscrm.kraftheinz.net.cn/?from=N8d3E4AyKCBiu7DuBRNPlw==#/
+✨ 注册链接（复制微信打开）：
+https://fscrm.kraftheinz.net.cn/?from=N8d3E4AyKCBiu7DuBRNPlw==#/
+
+https://kraftheinzcrm-uat.kraftheinz.net.cn/?from=FoAgXkwvgZl6SOyJ2ekGrg==
 ✨ ✨✨wxpusher一对一推送功能，
   ✨需要定义变量export WXPUSHER=wxpusher的app_token，不设置则不启用wxpusher一对一推送
   ✨需要在{ENV_NAME}变量最后添加@wxpusher的UID
@@ -360,7 +366,7 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
 ✨✨✨ @Author CHERWIN✨✨✨
 ''')
     local_script_name = os.path.basename(__file__)
-    local_version = '2024.05.15'
+    local_version = '2024.06.03'
     if IS_DEV:
         import_Tools()
     else:
