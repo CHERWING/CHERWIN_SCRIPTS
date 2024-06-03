@@ -485,6 +485,7 @@ class RUN:
             data = response.get('data', {})
             if data == {}: return False
             theme = data.get('theme', {})
+            description = data.get('description', {})
             self.cards = theme.get('cards', [{}])
 
             startTime = data.get('startTime', "2024/05/23 10:00:00")
@@ -513,14 +514,26 @@ class RUN:
                         Log(f'> 【{cardName}】卡【{cardAmassedNum}】张')
                     if current_time.date() == act_end_time.date() and current_time < act_end_time:
                         print("今日结束活动，进行自动兑换")
+                        self.getPrizeList(True)
+                    else:
                         self.getPrizeList()
+
+                    # # 定义正则表达式
+                    # pattern = r'（\d+）[^（]*（限[^）]+）'
+                    #
+                    # # 查找所有匹配项
+                    # matches = re.findall(pattern, description)
+                    # Log('兑换条件：')
+                    # # 打印提取的兑奖条件
+                    # for match in matches:
+                    #     Log(match)
+
                 else:
                     print(f'>> 当前已收集：')
                     for card in cards:
                         cardName = card['cardName']
                         cardAmassedNum = card['cardAmassedNum']
                         print(f'> 【{cardName}】卡【{cardAmassedNum}】张')
-
                     if remainCount > 0:
                         for i in range(remainCount):
                             print(f'>> 开始第【{i + 1}】次点亮')
@@ -566,14 +579,13 @@ class RUN:
         url = f"{self.baseUrl}interactive/qianxi/amasscard/api/helpLightCard"
         response = self.make_request(url, data=self.game_json_data)
         # print(response)
-        if response.get('errcode', False) == "0" and response.get('data', {}):
+        if response.get('errcode', False) == "0":
             data = response.get('data', {})
             if data == {}: return False
-            ownerNick = data.get('ownerNick', 0)
-            cardName = data.get('cardName', 0)
+            ownerNick = data.get('ownerNick', '')
+            cardName = data.get('cardName', '')
             Log(f'>> 帮助【{ownerNick}】点亮【{cardName}】卡',True)
-            # if hasHelped:
-            #     Log(f'>> 已点亮：【{hasHelped}】次')
+
         if response.get('errcode', False) == "364" :
             print('好友助力已满')
         else:
@@ -618,7 +630,7 @@ class RUN:
                 min_exchanges = max_exchanges_for_card
         return min_exchanges
 
-    def getPrizeList(self):
+    def getPrizeList(self,change=False):
         act_name = '获取可兑换列表'
         Log(f'\n====== {act_name} ======',True)
         # print(json.dumps(json_data))
@@ -626,7 +638,7 @@ class RUN:
         response = self.make_request(url, data=self.game_json_data)
 
         if response.get('errcode', False) == "0" and response.get('data', {}):
-            print(f'> {act_name}成功！✅')
+            print(f'>>> {act_name}成功！✅')
             data = response.get('data', {})
             prizes =data.get('prizes', [{}])
             for prize in prizes:
@@ -642,11 +654,12 @@ class RUN:
                 required_cards = {int(card_id): 1 for card_id in cards_needed_list}
                 # 计算并输出结果
                 max_exchanges = self.calculate_max_exchanges(required_cards)
-                print(f"最多可以兑换 {max_exchanges} 次")
+                print(f">> 最多可以兑换 {max_exchanges} 次")
                 # self.consumerCards(prizeId)
-                for i in range(max_exchanges+1):
-                    print(f'开始第【{i+1}】次兑换')
-                    self.consumerCards(prizeId)
+                if change:
+                    for i in range(max_exchanges+1):
+                        print(f'开始第【{i+1}】次兑换')
+                        self.consumerCards(prizeId)
         else:
             print(f'> {act_name}失败❌：{response}')
             return False
