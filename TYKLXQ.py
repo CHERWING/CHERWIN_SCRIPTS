@@ -645,8 +645,8 @@ class RUN:
                 prizeId =prize.get('prizeId', '')
                 prizeName =prize.get('prizeName', '')
                 cardsNeeded =prize.get('cardsNeeded', '')
-                Log(f'>> 当前可兑换：【{prizeName}】',True)
-                Log(f'>> ID：【{prizeId}】',True)
+                Log(f'>> 当前可兑换：【{prizeName}】')
+                Log(f'>> ID：【{prizeId}】')
                 # 需要消耗的卡片ID
                 cards_needed_list = cardsNeeded.split(",")
 
@@ -654,7 +654,7 @@ class RUN:
                 required_cards = {int(card_id): 1 for card_id in cards_needed_list}
                 # 计算并输出结果
                 max_exchanges = self.calculate_max_exchanges(required_cards)
-                print(f">> 最多可以兑换 {max_exchanges} 次")
+                Log(f">> 最多可以兑换 {max_exchanges} 次")
                 # self.consumerCards(prizeId)
                 if change:
                     for i in range(max_exchanges+1):
