@@ -52,9 +52,17 @@ class RUN:
         self.index = index + 1
         # print(self.access_token)
         self.UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 MicroMessenger/7.0.20.1781(0x6700143B) NetType/WIFI MiniProgramEnv/Windows WindowsWechat/WMPF WindowsWechat(0x63090a1b) XWEB/9129"
+        PROXY_URL = os.environ.get(f'{ENV_NAME}_PROXY_URL', False)
+        if PROXY_URL:
+            print(f'【已设置反代】：{PROXY_URL}✅')
+            self.baseUrl = f'{PROXY_URL}szbay/api/services/app/'
+        else:
+            print(
+                f'【未设置反代，使用官方域名】❌ 脚本如果报错（unsafe legacy renegotiation）请自行搭建反代，搭建方法见：https://github.com/CHERWING/CHERWIN_SCRIPTS/tree/main/Cloudflare%20Workers%20Proxy(代理变量名【{ENV_NAME}_PROXY_URL】)')
+            self.baseUrl = 'https://program.springcocoon.com/szbay/api/services/app/'
 
         self.headers ={
-            'Host':'program.springcocoon.com',
+            'Host': self.baseUrl.split('/')[2],
             'Accept':'application/json, text/javascript, */*; q=0.01',
             'X-Requested-With':'XMLHttpRequest',
             'Accept-Language':'zh-CN,zh-Hans;q=0.9',
@@ -62,6 +70,7 @@ class RUN:
             'X-XSRF-TOKEN':self.X_XSRF_TOKEN,
             'Content-Type':'application/x-www-form-urlencoded',
             'Origin':'https://program.springcocoon.com',
+            'site':'program.springcocoon.com',
             'User-Agent':self.UA,
             'Referer':'https://program.springcocoon.com/szbay/AppInteract/SignIn/Index?isWeixinRegister=true',
             'Connection':'keep-alive',
@@ -69,7 +78,7 @@ class RUN:
         }
         self.s = requests.session()
         self.s.verify = False
-        self.baseUrl = 'https://program.springcocoon.com/szbay/api/services/app/'
+        # self.baseUrl = 'https://proxy.cherwin.workers.dev/szbay/api/services/app/'
 
     def make_request(self, url, method='post', headers={}, json_data={}, params=None, data=None):
         if headers == {}:
@@ -170,7 +179,7 @@ class RUN:
             result = response.get('result', {})
             point = result.get('listSignInRuleData', [])[0]['point']
             print(f'{act_name}成功！✅')
-            print(f'> 获得【{point}】万象星')
+            Log(f'> 获得【{point}】万象星')
             return True
         elif success == False:
 
@@ -274,7 +283,7 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
 ✨✨✨ @Author CHERWIN✨✨✨
 ''')
     local_script_name = os.path.basename(__file__)
-    local_version = '2024.06.01'
+    local_version = '2024.06.05'
     if IS_DEV:
         import_Tools()
     else:
