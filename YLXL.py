@@ -105,13 +105,12 @@ class RUN:
         response = self.make_request(url,method='get')
         if response.get('status', False):
             print(f'{act_name}成功！✅')
-            site = {'1520': "活力伊利", '1160': '金典SATINE', '1068': '甄稀冰淇淋','1130': '金典有机生活+'}
+            site = {'1520': "活力伊利", '1577': "活力伊利", '1160': '金典SATINE', '1068': '甄稀冰淇淋','1130': '金典有机生活+'}
             registerSource = response.get('data')['registerSource']
             Log(f'当前Source：【{registerSource}】')
             siteName = site.get(registerSource,False)
             if not siteName:
-                Log(f'当前小程序暂不支持，请检查抓token的小程序是否在以下列表：【{site}】')
-                return False
+                Log(f'当前小程序名称识别失败')
             Log(f'当前token所属小程序：【{siteName}】')
             nickName = response.get('data')['nickName']
             mobile = response.get('data')['mobile']
@@ -281,7 +280,7 @@ export SCRIPT_UPDATE = 'False' 关闭脚本自动更新，默认开启
 ✨✨✨ @Author CHERWIN✨✨✨
 ''')
     local_script_name = os.path.basename(__file__)
-    local_version = '2024.05.26'
+    local_version = '2024.06.05'
     if IS_DEV:
         import_Tools()
     else:
