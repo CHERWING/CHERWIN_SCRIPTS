@@ -2,6 +2,16 @@
 
 <h2 align="center"><a href="https://github.com/CHERWING/CHERWIN_SCRIPTS/wiki/%E2%9C%A8-CHERWIN%E8%84%9A%E6%9C%AC%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97-%E2%9C%A8">点击查看详细使用说明</a></h2>
 
+<h2 align="center">✨在上海开了家打金店，有忙最近，佛系更新，脚本全开源，有能力自己改改</h2>
+
+
+<p align="center">
+  <img src="https://github.com/CHERWING/CHERWIN_SCRIPTS/assets/160421895/1c8a0f41-fb92-4b0e-abd1-0d85cba0081f" width="150">
+</p>
+<p align="center">
+点评码，有需要可以来店支持一下
+</p>
+
 <p align="center">
   <img src="https://github.com/CHERWING/CHERWIN_SCRIPTS/assets/160421895/691b9f30-7d5c-4b55-8af0-0e8f14b6a424" width="150">
 </p>
