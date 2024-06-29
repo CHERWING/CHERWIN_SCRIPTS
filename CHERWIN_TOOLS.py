@@ -11,7 +11,7 @@ import requests
 from http import HTTPStatus
 from datetime import datetime
 
-NOW_TOOLS_VERSION = '2024.05.27'
+NOW_TOOLS_VERSION = '2024.05.28'
 if os.path.isfile('DEV_ENV.py'):
     import DEV_ENV
 
@@ -142,9 +142,9 @@ def CHECK_UPDATE_NEW(local_version, server_version, server_script_url, script_fi
             return False
     except requests.exceptions.RequestException as e:
         print(f'发生网络错误：{e}')
-        server_base_url = f"https://py.cherwin.cn/{APP_NAME}/"
-        server_script_url = f"{server_base_url}{script_filename}"
-        CHECK_UPDATE_NEW(local_version, server_version, server_script_url, script_filename, APP_NAME=APP_NAME)
+        # server_base_url = f"https://py.cherwin.cn/{APP_NAME}/"
+        # server_script_url = f"{server_base_url}{script_filename}"
+        # CHECK_UPDATE_NEW(local_version, server_version, server_script_url, script_filename, APP_NAME=APP_NAME)
     except Exception as e:
         print(f'发生未知错误：{e}')
     return False  # 返回 False 表示没有进行更新操作
@@ -339,7 +339,7 @@ def RESTART_SCRIPT(RESTART_SCRIPT_NAME):
 def CHECK():
     global CHERWIN_SCRIPT_CONFIG
     print('>>>>>>>开始获取版本信息...')
-    baseurl = 'https://py.cherwin.cn/'
+    baseurl = 'https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/'
     TOOLS_NAME = 'CHERWIN_TOOLS.py'
     server_script_url = f'https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/{TOOLS_NAME}'
     try:
