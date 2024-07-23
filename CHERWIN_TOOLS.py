@@ -142,9 +142,6 @@ def CHECK_UPDATE_NEW(local_version, server_version, server_script_url, script_fi
             return False
     except requests.exceptions.RequestException as e:
         print(f'发生网络错误：{e}')
-        # server_base_url = f"https://py.cherwin.cn/{APP_NAME}/"
-        # server_script_url = f"{server_base_url}{script_filename}"
-        # CHECK_UPDATE_NEW(local_version, server_version, server_script_url, script_filename, APP_NAME=APP_NAME)
     except Exception as e:
         print(f'发生未知错误：{e}')
     return False  # 返回 False 表示没有进行更新操作
@@ -339,9 +336,9 @@ def RESTART_SCRIPT(RESTART_SCRIPT_NAME):
 def CHECK():
     global CHERWIN_SCRIPT_CONFIG
     print('>>>>>>>开始获取版本信息...')
-    baseurl = 'https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/'
+    baseurl = 'https://ghproxy.com/https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/'
     TOOLS_NAME = 'CHERWIN_TOOLS.py'
-    server_script_url = f'https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/{TOOLS_NAME}'
+    server_script_url = f'https://ghproxy.com/https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/{TOOLS_NAME}'
     try:
         response = requests.get(f'{baseurl}CHERWIN_SCRIPT_CONFIG.json', verify=False)
         response.encoding = 'utf-8'
@@ -500,7 +497,7 @@ def get_ip():
     
 def main(APP_NAME, local_script_name, ENV_NAME, local_version, need_invite=False):
     global APP_INFO, TIPS, TIPS_HTML
-    git_url = f'https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/{local_script_name}'
+    git_url = f'https://ghproxy.com/https://github.com/CHERWING/CHERWIN_SCRIPTS/raw/main/{local_script_name}'
     if CHECK():
         APP_INFO = CHERWIN_SCRIPT_CONFIG.get("APP_CONFIG", {}).get(ENV_NAME, {})
         # print(APP_INFO)
