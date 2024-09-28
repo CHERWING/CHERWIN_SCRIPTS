@@ -165,17 +165,20 @@ class RUN:
         url = 'https://mcs-mimp-web.sf-express.com/mcs-mimp/commonPost/~memberActLengthy~redPacketActivityService~superWelfare~receiveRedPacket'
         response = self.do_request(url, data=json_data)
         # print(response)
-        if response.get('success') == True:
-            gift_list = response.get('obj', {}).get('giftList', [])
-            if response.get('obj', {}).get('extraGiftList', []):
-                gift_list.extend(response['obj']['extraGiftList'])
-            gift_names = ', '.join([gift['giftName'] for gift in gift_list])
-            receive_status = response.get('obj', {}).get('receiveStatus')
-            status_message = '领取成功' if receive_status == 1 else '已领取过'
-            Log(f'超值福利签到[{status_message}]: {gift_names}')
-        else:
-            error_message = response.get('errorMessage') or json.dumps(response) or '无返回'
-            print(f'超值福利签到失败: {error_message}')
+        try:
+            if response.get('success') == True:
+                gift_list = response.get('obj', {}).get('giftList', [])
+                if response.get('obj', {}).get('extraGiftList', []):
+                    gift_list.extend(response['obj']['extraGiftList'])
+                gift_names = ', '.join([gift['giftName'] for gift in gift_list])
+                receive_status = response.get('obj', {}).get('receiveStatus')
+                status_message = '领取成功' if receive_status == 1 else '已领取过'
+                Log(f'超值福利签到[{status_message}]: {gift_names}')
+            else:
+                error_message = response.get('errorMessage') or json.dumps(response) or '无返回'
+                print(f'超值福利签到失败: {error_message}')
+        except Exception as e:
+            print(f'超值福利签到失败: {e}')
 
     def get_SignTaskList(self, END=False):
         if not END: print(f'>>>开始获取签到任务列表')
