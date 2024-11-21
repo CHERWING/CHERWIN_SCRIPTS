@@ -336,9 +336,9 @@ def RESTART_SCRIPT(RESTART_SCRIPT_NAME):
 def CHECK():
     global CHERWIN_SCRIPT_CONFIG
     print('>>>>>>>开始获取版本信息...')
-    baseurl = 'https://gitee.com/cherwin/CHERWIN_SCRIPTS/raw/main/'
+    baseurl = 'https://github.moeyy.xyz/https://raw.githubusercontent.com/OpenTritium/CHERWIN_SCRIPTS/refs/heads/main/'
     TOOLS_NAME = 'CHERWIN_TOOLS.py'
-    server_script_url = f'https://gitee.com/cherwin/CHERWIN_SCRIPTS/raw/main/{TOOLS_NAME}'
+    server_script_url = f'https://github.moeyy.xyz/https://raw.githubusercontent.com/OpenTritium/CHERWIN_SCRIPTS/refs/heads/main/{TOOLS_NAME}'
     try:
         response = requests.get(f'{baseurl}CHERWIN_SCRIPT_CONFIG.json', verify=False)
         response.encoding = 'utf-8'
@@ -497,7 +497,7 @@ def get_ip():
     
 def main(APP_NAME, local_script_name, ENV_NAME, local_version, need_invite=False):
     global APP_INFO, TIPS, TIPS_HTML
-    git_url = f'https://gitee.com/cherwin/CHERWIN_SCRIPTS/raw/main/{local_script_name}'
+    git_url = f'https://github.moeyy.xyz/https://raw.githubusercontent.com/OpenTritium/CHERWIN_SCRIPTS/refs/heads/main/{local_script_name}'
     if CHECK():
         APP_INFO = CHERWIN_SCRIPT_CONFIG.get("APP_CONFIG", {}).get(ENV_NAME, {})
         # print(APP_INFO)

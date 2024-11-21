@@ -1591,7 +1591,7 @@ class RUN:
         if not self.login_res: return False
         # 执行签到任务
         self.sign()
-        self.superWelfare_receiveRedPacket()
+        #self.superWelfare_receiveRedPacket()
         self.get_SignTaskList()
         self.get_SignTaskList(True)
 
